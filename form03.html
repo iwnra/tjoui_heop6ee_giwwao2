@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>テスト</title>
+        <link href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" rel="stylesheet">
         <style type="text/css">
             body {
                 background-color:#9dcbf1;
@@ -11,114 +12,258 @@
                 color:#134d9e;
                 text-align:center;
             }
-            .box {
-                background-color:#ffffe6;
-            }
             .que {
                 color:#0041cc;
             }
+            table {
+                border-collapse: collapse;
+            }
+            button {
+                width: 80px;
+                color: white;
+                background-color: rgb(43, 193, 9);
+                border: solid 1px rgb(43, 193, 9);
+                border-radius: 5px;
+                box-shadow: 5px 5px 5px 0 rgba(0, 0, 0, 0.3);
+            }
+            button:hover {
+                background-color: rgb(31, 132, 8);
+                border: solid 1px rgb(31, 132, 8);
+            }
+            .header {
+                background-color: #0041cc;
+                color: white;
+            }
+            .fas {
+                color: white;
+            }
+            .fas:hover {
+                color: grey;
+            }
+            .tablearea1 {
+                height: 200px;
+                width: 843px;
+                overflow-y: auto;
+            }
+            .table2 {
+                background-color: white;
+            }
+            .table2 th, .table2 td {
+                border: solid 1px black;
+            }
+            .table2 tr:nth-child(1) td {
+                border-top: none;
+            }
         </style>
 
-        <script type="text/javascript">
-            function Nul_Check(){
-                if(document.mail_form.name.value==""){
-                    alert("���O����͂��ĉ�����");
-                    return false;
-                }
-                if(document.mail_form.address.value==""){
-                    alert("���[���A�h���X����͂��ĉ�����");
-                    return false;
-                }
-                return true;
-            }
-        </script>
     </head>
 
     <body>
-        <h1 class="title">テストフォーム</h1>
+        <div class="header">
+            <a href=""><i class="fas fa-sharp fa-light fa-house"></i></a>
+            <span>一覧表</span>
+        </div>
     
         <form method="post" action="http://xxx.xxx.xxx/xxx/xxx.cgi" name="mail_form" onSubmit="javascript:return Nul_Check()">
-            <input type="hidden" name="xxxxx" value="xxxx@xxx.xx.xx">
-            <input type="hidden" name="xxxxx" value="���[�����M�t�H�[��">
-            <input type="hidden" name="xxxxx" value="http://www.xxx.xx.xxx/~xxx/">
 
-            <table cellspacing="0" cellpadding="0" border="0" align="center" class="box">
+            <table class="table1">
                 <tr>
-                    <td width="15" height="15"><img src="image/frame_a.gif" alt=""></td>
-                    <td colspan="2"><img src="image/dummy.gif" alt=""></td>
-                    <td width="15" height="15"><img src="image/frame_b.gif" alt=""></td>
+                    <th class="que">名前</th>
+                    <td><input type="text" name="name"></td>
                 </tr>
                 <tr>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                    <td width="120" height="30" class="que">�������O</td>
-                    <td width="200"><input type="text" name="name" size="40"></td>
-                    <td><img src="image/dummy.gif" alt=""></td>
+                    <th class="que">住所</th>
+                    <td><input type="text" name="address"></td>
                 </tr>
                 <tr>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                    <td height="30" class="que">�����[���A�h���X</td>
-                    <td><input type="text" name="address" size="40"></td>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                </tr>
-                <tr>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                    <td height="30" class="que">������</td>
+                    <th class="que">性別</th>
                     <td>
-                        <input type="radio" name="sex" value="male">�j��
-                        <input type="radio" name="sex" value="female">����
+                        <input type="radio" name="sex" value="male">男性
+                        <input type="radio" name="sex" value="female">女性
                     </td>
-                    <td><img src="image/dummy.gif" alt=""></td>
                 </tr>
                 <tr>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                    <td height="30" class="que">�����Z�܂�</td>
+                    <th class="que">地域</th>
                     <td class="ans">
                         <select name="area">
-                            <option value="">--- �I�����Ă������� ---</option>
-                            <option value="hokkaido">�k�C��</option>
-                            <option value="tohoku">���k</option>
-                            <option value="kanto">�֓�</option>
-                            <option value="hokuriku">�k��</option>
-                            <option value="chubu">����</option>
-                            <option value="kansai">�֐�</option>
-                            <option value="sikoku">�l��</option>
-                            <option value="kyusyu">��B</option>
-                            <option value="okinawa">����</option>
+                            <option value="">--- 選択してください ---</option>
+                            <option value="hokkaido">北海道</option>
+                            <option value="tohoku">東北</option>
+                            <option value="kanto">関東</option>
+                            <option value="hokuriku">北陸</option>
+                            <option value="chubu">中部</option>
+                            <option value="kansai">関西</option>
+                            <option value="sikoku">四国</option>
+                            <option value="kyusyu">九州</option>
+                            <option value="okinawa">沖縄</option>
                         </select>
                     </td>
-                    <td><img src="image/dummy.gif" alt=""></td>
                 </tr>
                 <tr>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                    <td height="30" class="que">���ǂ������_</td>
+                    <th class="que">種類</th>
                     <td class="ans">
-                        <input type="checkbox" name="fine" value="design">�f�U�C��
-                        <input type="checkbox" name="fine" value="illust">�C���X�g
-                        <input type="checkbox" name="fine" value="photo">�ʐ^
-                        <input type="checkbox" name="fine" value="diary">���L
+                        <label><input type="checkbox" name="fine" value="design">デザイン</label>
+                        <input type="checkbox" name="fine" value="illust">イラスト
+                        <input type="checkbox" name="fine" value="photo">写真
+                        <input type="checkbox" name="fine" value="diary">日記
                     </td>
-                    <td><img src="image/dummy.gif" alt=""></td>
                 </tr>
                 <tr>
-                    <td><img src="image/dummy.gif" alt=""></td>
-                    <td valign="top" class="que">�����z</td>
+                    <th class="que">備考</th>
                     <td><textarea name="impression" cols="50" rows="10"></textarea></td>
-                    <td><img src="image/dummy.gif" alt=""></td>
                 </tr>
-                <tr><td colspan="4" height="10"><img src="image/dummy.gif" alt=""></td></tr>
                 <tr>
                     <td colspan="4" align="center">
-                        <input type="submit" value="���M">
-                        <input type="reset" value="��蒼��">
+                        <button type="submit">送信</button>
+                        <button type="reset">リセット</button>
                     </td>
-                </tr>
-                <tr>
-                    <td><img src="image/frame_c.gif" width="15" height="15" alt=""></td>
-                    <td colspan="2"><img src="image/dummy.gif" alt=""></td>
-                    <td><img src="image/frame_d.gif" width="15" height="15" alt=""></td>
                 </tr>
             </table>
         </form>
-        <p align="center"><a href="../index.html">�߂�</a></p>
+        <br><br>
+
+        
+        <form class="">
+            <div>新しい行を追加：<input type="button" id="add" name="add" value="追加" onclick="appendRow()"></div>
+            <div>チェック行の削除：<input type="button" id="del" name="del" value="削除" onclick="deleteRow()"></div><br>
+            <table class="table2">
+                <tr>    
+                    <th width="100px">カラム名１</th>
+                    <th width="100px">カラム名２</th>
+                    <th width="100px">カラム名３</th>
+                    <th width="100px">カラム名４</th>
+                    <th width="100px">カラム名５</th>
+                    <th width="100px">カラム名６</th>
+                    <th width="100px">カラム名７</th>
+                    <th width="100px">カラム名８</th>
+                </tr> 
+            </table>
+            <div class="tablearea1">
+                <table class="table2" id="tb2">
+                    <tr id="tr1">
+                        <td width="100px"><span>1</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><span contenteditable="true">セル５</span></td>
+                        <td width="100px"><span contenteditable="true">セル６</span></td>
+                        <td width="100px"><input type="checkbox" name="DeleteName[]" value="1" id="cb_tr1" onchange="foo('tr1');"></td>
+                    </tr>
+                    <tr>
+                        <td width="306px" colspan="3"><span contenteditable="true">合計</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><span contenteditable="true">セル５</span></td>
+                        <td width="100px"><span contenteditable="true">セル６</span></td>
+                        <td width="100px"><span contenteditable="true">セル７</span></td>
+                        <td width="100px"></td>
+                    </tr>
+                </table>
+            </div>
+        </form>
+
+        <script>
+            /*
+            * foo: チェックを入れた行の背景色を変更
+            */
+            function foo(num) {
+                if (document.getElementById("cb_" + num).checked) {
+                    document.getElementById(num).style.backgroundColor='#cccccc';
+
+                } else {
+                    document.getElementById(num).style.backgroundColor='white';
+                }
+            }
+
+            /*
+            * appendRow: テーブルに行を追加する処理
+            */
+            function appendRow()
+            {
+                var objTBL = document.getElementById("tb2");
+                if (!objTBL)
+                    return;
+                
+                // 行数をカウント
+                var count = objTBL.rows.length;
+                
+                // 合計行の上に新しい行を追加
+                var row = objTBL.insertRow(count -1);
+                var num = "'tr" + count + "'";
+                row.setAttribute("id","tr" + count);
+
+                // 追加した行にセルを挿入
+                var c1 = row.insertCell(0);
+                var c2 = row.insertCell(1);
+                var c3 = row.insertCell(2);
+                var c4 = row.insertCell(3);
+                var c5 = row.insertCell(4);
+                var c6 = row.insertCell(5);
+                var c7 = row.insertCell(6);
+                var c8 = row.insertCell(7);
+
+                // セルにスタイルを設定
+                c1.style.cssText = "width:100px;";
+                c2.style.cssText = "width:100px;";
+                c3.style.cssText = "width:100px;";
+                c4.style.cssText = "width:100px;";
+                c5.style.cssText = "width:100px;";
+                c6.style.cssText = "width:100px;";
+                c7.style.cssText = "width:100px;";
+                c8.style.cssText = "width:100px;";
+                
+                // セルの表示内容を設定（<td>内）
+                c1.innerHTML = '<span class="seqno">' + count + '</span>';
+                c2.innerHTML = '<span contenteditable="true">' + 'セル１' + '</span>';
+                c3.innerHTML = '<span contenteditable="true">' + 'セル２' + '</span>';
+                c4.innerHTML = '<span contenteditable="true">' + 'セル３' + '</span>';
+                c5.innerHTML = '<span contenteditable="true">' + 'セル４' + '</span>';
+                c6.innerHTML = '<span contenteditable="true">' + 'セル５' + '</span>';
+                c7.innerHTML = '<span contenteditable="true">' + 'セル６' + '</span>';
+                c8.innerHTML = '<input type="checkbox" name="DeleteName[]" value="' + count + '" id="cb_tr' + count + '" onchange="foo(' + num + ');">'              
+            }
+
+            /*
+            * deleteRow: チェックを入れた行の削除処理
+            */
+            function deleteRow() {
+                const checkedList = document.querySelectorAll(".table2 [name='DeleteName[]']:checked");
+                if (checkedList.length === 0) {
+                    alert("選択してください");
+                    return;
+                }
+                if(!confirm("削除しますか？")) {
+                    return;
+                } 
+                checkedList.forEach(check => check.closest("tr").remove());
+
+                // <span> 行番号ふり直し
+                var tagElements = document.getElementsByTagName("span");
+                if (!tagElements)
+                    return false;
+
+                var seq = 2;
+                for (var i = 0; i < tagElements.length; i++) {
+                    if (tagElements[i].className.match("seqno"))
+                        tagElements[i].innerHTML = seq++;
+                }
+            }
+
+            // var table = document.querySelector("#tb2");
+            // var tr = table.querySelectorAll("tr");
+            // table.addEventListener("click", function(e) {
+            //     //clickされたのがtd要素のとき、
+            //     if(e.target.tagName.toLowerCase() === "td") {
+            //         for(var i = 0; i < tr.length; i++) {
+            //             //一旦全てのtr要素の背景色を白にし、
+            //             tr[i].style.backgroundColor = 'white';
+            //         }
+            //         //clickされたtd要素の親であるtr要素のみ背景色を赤にする
+            //         e.target.parentNode.style.backgroundColor = "red";
+            //     }
+            // }, false);
+           
+        </script>
+
     </body>
 </html>
