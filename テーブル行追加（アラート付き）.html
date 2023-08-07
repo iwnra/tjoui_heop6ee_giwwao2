@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>テスト</title>
+        <link href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                background-color:#9dcbf1;
+            }
+            button {
+                width: 80px;
+                color: white;
+                background-color: rgb(43, 193, 9);
+                border: solid 1px rgb(43, 193, 9);
+                border-radius: 5px;
+                box-shadow: 0px 3px 5px rgba(0, 0, 0, .3);
+                /* border-bottom: solid 5px rgb(31, 132, 8); */
+            }
+            button:hover {
+                background-color: rgb(31, 132, 8);
+                border: solid 1px rgb(31, 132, 8);
+                /* border-bottom: solid 2px rgb(17, 74, 4); */
+                /* margin-top: 3px; */
+            }
+            table {
+                border-collapse: collapse;
+                background-color: white;
+            }
+            table th, table td {
+                border: solid 1px black;
+            }
+            .row_blue2 {
+                background-color: #9dcbf1;
+            }
+            .row_blue {
+                background-color: blue;
+            }
+            .row_select {
+                background-color: #0A9BCD;
+            }
+            .row_add {
+                background-color: cadetblue;
+            }
+            .row_yel {
+                background-color: rgb(230, 250, 5);
+            }
+        </style>
+
+    </head>
+
+    <body>
+        
+        <form class="">
+            <div>新しい行を追加：<button type="button" id="add" name="add" onclick="appendRow()">追加</div>
+            <div>新しい行を追加2：<button type="button" id="add2" name="add2">追加2</div>
+            <br>
+            <table id="tb" class="table">
+                <thead>
+                    <tr>
+                        <th width="100px">No</th>
+                        <th width="100px">カラム名１</th>
+                        <th width="100px">カラム名２</th>
+                        <th width="100px">カラム名３</th>
+                        <th width="100px">カラム名４</th>
+                        <th width="100px">カラム名５</th>
+                        <th width="100px">カラム名６</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="tr1">
+                        <td width="100px"><span>1</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><span contenteditable="true">セル５</span></td>
+                        <td width="100px"><span contenteditable="true">セル６</span></td>
+                    </tr>
+                    <tr id="tr2" class="row_blue2">
+                        <td width="100px"><span>2</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><span contenteditable="true">セル５</span></td>
+                        <td width="100px"><span contenteditable="true">セル６</span></td>
+                    </tr>
+                    <tr id="tr3" class="row_blue">
+                        <td width="100px"><span>3</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><span contenteditable="true">セル５</span></td>
+                        <td width="100px"><span contenteditable="true">セル６</span></td>
+                    </tr>
+                    <tr id="tr4">
+                        <td width="100px"><span>4</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><span contenteditable="true">セル５</span></td>
+                        <td width="100px"><span contenteditable="true">セル６</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+
+        <script>
+            let table = document.getElementById("tb");
+
+            /*
+            * appendRow: テーブルに行を追加する処理
+            */
+            function appendRow() {
+                if (!table)
+                    return;
+                
+                // 行数をカウント
+                var count = table.rows.length;               
+                
+                // 最終行に新しい行を追加してidを付与
+                var row = table.insertRow(count);
+                var num = "'tr" + count + "'";
+                row.setAttribute("id","tr" + count);
+
+                // 追加した行にセルを挿入
+                var c1 = row.insertCell(0);
+                var c2 = row.insertCell(1);
+                var c3 = row.insertCell(2);
+                var c4 = row.insertCell(3);
+                var c5 = row.insertCell(4);
+                var c6 = row.insertCell(5);
+                var c7 = row.insertCell(6);
+
+                // 行にスタイルを設定
+                row.setAttribute("class", "row_add");
+
+                // セルにスタイルを設定
+                c1.style.cssText = "width:100px;";
+                c2.style.cssText = "width:100px;";
+                c3.style.cssText = "width:100px;";
+                c4.style.cssText = "width:100px;";
+                c5.style.cssText = "width:100px;";
+                c6.style.cssText = "width:100px;";
+                c7.style.cssText = "width:100px;";
+                
+                // セルの表示内容を設定（<td>内）
+                c1.innerHTML = '<span class="seqno">' + count + '</span>';
+                c2.innerHTML = '<span contenteditable="true">' + 'セル１' + '</span>';
+                c3.innerHTML = '<span contenteditable="true">' + 'セル２' + '</span>';
+                c4.innerHTML = '<span contenteditable="true">' + 'セル３' + '</span>';
+                c5.innerHTML = '<span contenteditable="true">' + 'セル４' + '</span>';
+                c6.innerHTML = '<span contenteditable="true">' + 'セル５' + '</span>';
+                c7.innerHTML = '<span contenteditable="true">' + 'セル６' + '</span>';
+                
+                // 行のクリックイベントを呼び出し
+                preloader();
+            }
+
+            /*
+            * appendRow: テーブルに行を追加する処理
+            */
+            var btn = document.getElementById('add2');
+            btn.addEventListener('click', function() {
+                if(confirm("行を追加してよろしいですか？")) {
+
+                    if (!table)
+                        return;
+                    
+                    // 行数をカウント
+                    var count = table.rows.length;               
+                    
+                    // 最終行に新しい行を追加してidを付与
+                    var row = table.insertRow(count);
+                    var num = "'tr" + count + "'";
+                    row.setAttribute("id","tr" + count);
+
+                    // 追加した行にセルを挿入
+                    var c1 = row.insertCell(0);
+                    var c2 = row.insertCell(1);
+                    var c3 = row.insertCell(2);
+                    var c4 = row.insertCell(3);
+                    var c5 = row.insertCell(4);
+                    var c6 = row.insertCell(5);
+                    var c7 = row.insertCell(6);
+
+                    // 行にスタイルを設定
+                    row.setAttribute("class", "row_yel");
+
+                    // セルにスタイルを設定
+                    c1.style.cssText = "width:100px;";
+                    c2.style.cssText = "width:100px;";
+                    c3.style.cssText = "width:100px;";
+                    c4.style.cssText = "width:100px;";
+                    c5.style.cssText = "width:100px;";
+                    c6.style.cssText = "width:100px;";
+                    c7.style.cssText = "width:100px;";
+                    
+                    // セルの表示内容を設定（<td>内）
+                    c1.innerHTML = '<span class="seqno">' + count + '</span>';
+                    c2.innerHTML = '<span contenteditable="true">' + 'セル１' + '</span>';
+                    c3.innerHTML = '<span contenteditable="true">' + 'セル２' + '</span>';
+                    c4.innerHTML = '<span contenteditable="true">' + 'セル３' + '</span>';
+                    c5.innerHTML = '<span contenteditable="true">' + 'セル４' + '</span>';
+                    c6.innerHTML = '<span contenteditable="true">' + 'セル５' + '</span>';
+                    c7.innerHTML = '<span contenteditable="true">' + 'セル６' + '</span>';
+                    
+                    // 行のクリックイベントを呼び出し
+                    preloader();
+
+                }else {
+                    return;
+                }
+            })
+
+            /**
+             * 選択行の背景色を変更（スタイル付与）
+             */ 
+            // function preloader() {
+            //     let rows = table.querySelectorAll("tbody tr");
+            //     let backgroundcolor_dict = {};
+            //     let tr_color = window.getComputedStyle(rows[0], "").color; 
+            //     rows.forEach((row) => {
+
+            //         // 行ごとに背景色が異なるため全ての行の変更前の背景色を取得
+            //         backgroundcolor_dict[String(row.rowIndex)] = window.getComputedStyle(row, "").backgroundColor;
+
+            //         row.addEventListener("click", function() {
+
+            //             // 一度全て元の配色
+            //             rows.forEach((click_row) => {
+            //                 click_row.style.backgroundColor = backgroundcolor_dict[String(click_row.rowIndex)];
+            //                 click_row.style.color = tr_color;
+            //             });
+                        
+            //             // 選択された行のみ配色変更
+            //             row.style.backgroundColor = "#0A9BCD";
+            //             row.style.color = "#FFFFFF";
+            //         },false);
+            //     });
+            // }
+
+            
+            /**
+             * 選択行の背景色を変更(クラス付与)
+             */ 
+             function preloader() {
+                let rows = table.querySelectorAll("tbody tr");
+
+                let backgroundcolor_dict = {};
+                let tr_color = window.getComputedStyle(rows[0], "").color; 
+                rows.forEach((row) => {
+
+                    // 行ごとに背景色が異なるため全ての行の変更前の背景色を取得
+                    backgroundcolor_dict[String(row.rowIndex)] = row.getAttribute("class");
+
+                    row.addEventListener("click", function() {
+
+                        // 一度全て元の配色
+                        rows.forEach((click_row) => {
+                            click_row.setAttribute("class", backgroundcolor_dict[String(click_row.rowIndex)]);
+                            click_row.style.color = tr_color;
+                        });
+                        
+                        // 選択された行のみ配色変更
+                        row.setAttribute("class", "row_select");
+                        row.style.color = "#FFFFFF";
+                    },false);
+                });
+            }
+
+            // すべてのデータの読み込み後に実行
+            window.onload = preloader;
+              
+        </script>
+
+    </body>
+</html>
