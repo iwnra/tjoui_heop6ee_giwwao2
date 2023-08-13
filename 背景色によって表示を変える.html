@@ -1,0 +1,297 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>テスト</title>
+        <link href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                background-color:#9dcbf1;
+            }
+            button {
+                width: 80px;
+                color: white;
+                background-color: rgb(43, 193, 9);
+                border: solid 1px rgb(43, 193, 9);
+                border-radius: 5px;
+                box-shadow: 0px 3px 5px rgba(0, 0, 0, .3);
+                /* border-bottom: solid 5px rgb(31, 132, 8); */
+            }
+            button:hover {
+                background-color: rgb(31, 132, 8);
+                border: solid 1px rgb(31, 132, 8);
+                /* border-bottom: solid 2px rgb(17, 74, 4); */
+                /* margin-top: 3px; */
+            }
+            table {
+                border-collapse: collapse;
+                background-color: white;
+            }
+            table th, table td {
+                border: solid 1px black;
+            }
+            .row_red {
+                background-color: red;
+            }
+            .row_blue {
+                background-color: blue;
+            }
+            .row_green {
+                background-color: green;
+            }
+            .row_select {
+                background-color: orange;
+            }
+            .row_add {
+                background-color: yellow;
+            }
+            .row_del {
+                background-color: gray !important;
+            }
+            .row_read {
+                background-color: white !important;
+            }
+            .hidden {
+                display: none;
+            }
+        </style>
+
+    </head>
+
+    <body>
+        
+        <form class="">
+            <div>新しい行を追加：<button type="button" id="add" name="add">追加</div>
+            <br>
+            <div>チェックした色の行だけ表示：
+                <!-- <input type="checkbox" id="check_red" onchange="check('red');">赤
+                <input type="checkbox" id="check_blue" onchange="check('blue');">青
+                <input type="checkbox" id="check_green" onchange="check('green');">緑 -->
+                <label><input type="checkbox" id="check_red" name="check_color" value="red" onchange="color_check();">赤</label>
+                <label><input type="checkbox" id="check_blue" name="check_color" value="blue" onchange="color_check();">青</label>
+                <label><input type="checkbox" id="check_green" name="check_color" value="green" onchange="color_check();">緑</label>
+                <button type="button" id="check_all" name="check_all" value="全選択">全選択</button>
+            </div>
+            <table id="tb" class="table">
+                <thead>
+                    <tr>
+                        <th width="100px">No</th>
+                        <th width="100px">カラム名１</th>
+                        <th width="100px">カラム名２</th>
+                        <th width="100px">カラム名３</th>
+                        <th width="100px">カラム名４</th>
+                        <th width="100px">既読</th>
+                        <th width="100px">削除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="tr1">
+                        <td width="100px"><span>1</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><input type="checkbox" id="read_tr1"></td>
+                        <td width="100px"><input type="checkbox" id="delete_tr1" onchange="del_check('tr1');"></td>
+                    </tr>
+                    <tr id="tr2" class="row_red">
+                        <td width="100px"><span>2</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><input type="checkbox" id="read_tr2"></td>
+                        <td width="100px"><input type="checkbox" id="delete_tr2" onchange="del_check('tr2');"></td>
+                    </tr>
+                    <tr id="tr3" class="row_blue">
+                        <td width="100px"><span>3</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><input type="checkbox" id="read_tr3"></td>
+                        <td width="100px"><input type="checkbox" id="delete_tr3" onchange="del_check('tr3');"></td>
+                    </tr>
+                    <tr id="tr4" class="row_green">
+                        <td width="100px"><span>4</span></td>
+                        <td width="100px"><span contenteditable="true">セル１</span></td>
+                        <td width="100px"><span contenteditable="true">セル２</span></td>
+                        <td width="100px"><span contenteditable="true">セル３</span></td>
+                        <td width="100px"><span contenteditable="true">セル４</span></td>
+                        <td width="100px"><input type="checkbox" id="read_tr4"></td>
+                        <td width="100px"><input type="checkbox" id="delete_tr4" onchange="del_check('tr4');"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            <div><button type="button" name="update" onclick="update_table()">更新</div>
+        </form>
+
+        <script>
+            let table = document.getElementById("tb"); //テーブル
+            let checkAll_btn = document.getElementById("check_all"); //全選択ボタン
+
+            /*
+            * appendRow: テーブルに行を追加する処理
+            */
+            var btn = document.getElementById('add');
+            btn.addEventListener('click', function() {
+                if(confirm("行を追加してよろしいですか？")) {
+
+                    if (!table)
+                        return;
+                    
+                    // 行数をカウント
+                    var count = table.rows.length;               
+                    
+                    // 最終行に新しい行を追加してidを付与
+                    var row = table.insertRow(count);
+                    var num = "tr" + count;
+                    row.setAttribute("id", num);
+
+                    // 追加した行にセルを挿入
+                    var c1 = row.insertCell(0);
+                    var c2 = row.insertCell(1);
+                    var c3 = row.insertCell(2);
+                    var c4 = row.insertCell(3);
+                    var c5 = row.insertCell(4);
+                    var c6 = row.insertCell(5);
+                    var c7 = row.insertCell(6);
+
+                    // 行にスタイルを設定
+                    row.setAttribute("class", "row_add");
+
+                    // セルにスタイルを設定
+                    c1.style.cssText = "width:100px;";
+                    c2.style.cssText = "width:100px;";
+                    c3.style.cssText = "width:100px;";
+                    c4.style.cssText = "width:100px;";
+                    c5.style.cssText = "width:100px;";
+                    c6.style.cssText = "width:100px;";
+                    c7.style.cssText = "width:100px;";
+                    
+                    // セルの表示内容を設定（<td>内）
+                    c1.innerHTML = '<span class="seqno">' + count + '</span>';
+                    c2.innerHTML = '<span contenteditable="true">' + 'セル１' + '</span>';
+                    c3.innerHTML = '<span contenteditable="true">' + 'セル２' + '</span>';
+                    c4.innerHTML = '<span contenteditable="true">' + 'セル３' + '</span>';
+                    c5.innerHTML = '<span contenteditable="true">' + 'セル４' + '</span>';
+                    c6.innerHTML = '<input type="checkbox" id="read_' + num + '">';
+                    c7.innerHTML = '<input type="checkbox" id="delete_' + num + '" onchange="del_check(\'' + num + '\');"></span>';
+
+                }else {
+                    return;
+                }
+            })
+            
+            // チェックした色の行のみ表示（複数選択不可）
+            // function check(color) {
+            //     let rows = table.querySelectorAll("tbody tr");
+            //     if(document.getElementById('check_' + color).checked) {
+            //         rows.forEach((row) => {
+            //             if(!row.classList.contains('row_' + color)) {
+            //                 row.style.display = "none";
+            //             }else {
+            //                 row.style.display = "table-row";
+            //             }
+            //         })
+            //     } else {
+            //         rows.forEach((row) => {
+            //             row.style.display = "table-row";
+            //         })
+            //     } 
+            // }
+
+
+            // チェックした色の行のみ表示（複数選択可）
+            function color_check() {
+                let rows = table.querySelectorAll("tbody tr");
+                let checked = document.querySelectorAll('input[id^="check_"]:checked');
+                let colors = [];
+                for(var i = 0; i < checked.length; i++) {
+                    colors[i] = checked[i].getAttribute('value');
+                }
+                if(checked.length !== 0) {
+                    rows.forEach((row) => {
+                        row.style.display = "none";
+                        colors.forEach((color) => {
+                            if(row.classList.contains('row_' + color)) {
+                                row.style.display = "table-row";
+                            }
+                        })
+                    })
+                    if(checked.length === 3) {
+                        checkAll_btn.textContent = '全解除';
+                    }
+                } else {
+                    rows.forEach((row) => {
+                        row.style.display = "table-row";
+                    })
+                    checkAll_btn.textContent = '全選択';
+                }
+            }
+
+            // 削除チェックボックスのチェック時に行の背景色をグレーに変更
+            function del_check(num) {
+                if (document.getElementById("delete_" + num).checked) {
+                    document.getElementById(num).classList.add('row_del');
+                } else {
+                    document.getElementById(num).classList.remove('row_del');
+                }
+            }
+
+            // 更新ボタン押下処理
+            function update_table() {
+                // 既読チェック行の処理：背景色を白に戻してチェックボックスを非活性にする
+                const read_checked = document.querySelectorAll('input[id^="read_"]:checked');
+                read_checked.forEach(check => {
+                    check.closest("tr").classList.remove('row_red', 'row_blue', 'row_green', 'row_add')
+                    check.disabled = true
+                })
+                // 削除チェック行の処理：行を削除
+                const delete_checked = document.querySelectorAll('input[id^="delete_"]:checked');
+                delete_checked.forEach(check => check.closest("tr").remove())
+            }
+
+            // 「全選択」ボタン押下時の挙動分岐
+            let clickCount = 0;
+            checkAll_btn.addEventListener("click",() => {
+                let checked = document.querySelectorAll('input[id^="check_"]:checked');
+                if(checked.length !== 0 && checked.length !== 3) {
+                    clickCount += 1;
+                    if (clickCount % 2 === 1) {   
+                        check_all(true); 
+                    }else {
+                        check_all(false); 
+                    }      
+                } else if(checked.length === 0) {
+                    check_all(true); 
+                } else {
+                    check_all(false);
+                } 
+            },false);
+
+            // チェックボックス「全選択」の場合、「全解除」の場合の処理
+            function check_all(bool) {
+                let checkColors = document.getElementsByName("check_color");
+                if (bool) {
+                    //「全選択」の処理
+                    checkColors.forEach(all => {
+                        all.checked = true;
+                        color_check();
+                    })
+                    checkAll_btn.textContent = '全解除';
+                }else {
+                    //「全解除」の処理
+                    checkColors.forEach(all => {
+                        all.checked = false;
+                        color_check();
+                    })
+                    checkAll_btn.textContent = '全選択';   
+                }
+            }
+            
+        </script>
+
+    </body>
+</html>
