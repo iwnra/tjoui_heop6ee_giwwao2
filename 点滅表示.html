@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+</head>
+
+<body>
+
+<!-- HTML -->
+<div class="table-wrapper">
+  <table class="demo-table">
+    <thead>
+      <tr><th>項目</th><th>値</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AAA</td><td>111</td></tr>
+      <tr><td>BBB</td><td>222</td></tr>
+      <tr><td>CCC</td><td>333</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 枠 -->
+  <div class="stripe-mask-border"></div>
+  <!-- 枠の外 上に文字表示 -->
+  <div class="stripe-alert-text">注意！</div>
+</div>
+
+<style>
+.table-wrapper {
+  position: relative;
+  display: inline-block;
+  margin: 200px;
+}
+
+/* テーブル（適当） */
+.demo-table {
+  width: 600px;
+  border-collapse: collapse;
+}
+.demo-table th, .demo-table td {
+  border: 1px solid #ddd;
+  padding: 12px 16px;
+}
+
+/* ★ 角が完全につながる斜め縞枠 ★ */
+.stripe-mask-border {
+  position: absolute;
+  inset: -30px;
+  pointer-events: none;
+  z-index: 9999;
+
+  /* 1枚の大きな斜めストライプ背景 */
+  background: repeating-linear-gradient(
+    45deg,
+    #FFD400 0 20px,
+    #000 20px 40px
+  );
+
+  /* マスク：中央を切り抜いて枠だけ残す */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  /* 枠の太さ */
+  padding: 20px;
+
+  /* 角丸 */
+  border-radius: 10px;
+
+  /* 点滅（瞬間On/Off） */
+  animation: blinkMask 2s infinite steps(1);
+}
+
+/* 枠の上に文字 */
+.stripe-alert-text {
+  position: absolute;
+  top: -85px;  /* 枠の外上に表示 */
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  font-size: 30px;
+  color: red;
+  pointer-events: none; /* クリック妨げない */
+  animation: blinkMask 2s infinite steps(1); /* 枠と同じタイミングで点滅 */
+}
+
+/* 点滅アニメーション（枠・文字共通） */
+@keyframes blinkMask {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+</style>
+
+
+</body>
+
+</html>
