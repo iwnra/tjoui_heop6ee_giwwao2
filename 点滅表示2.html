@@ -1,0 +1,122 @@
+<body>
+<div class="table-wrapper">
+  <table class="demo-table">
+    <thead>
+      <tr><th>項目</th><th>値</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AAA</td><td>111</td></tr>
+      <tr><td>BBB</td><td>222</td></tr>
+      <tr><td>CCC</td><td>333</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 枠 -->
+  <div class="stripe-mask-border hidden"></div>
+
+  <!-- 上部テキスト -->
+  <div class="stripe-alert-text hidden">注意！</div>
+</div>
+
+<script>
+// body を赤点滅
+document.body.classList.add("body-blink");
+
+// 10秒後に枠と文字を表示
+setTimeout(() => {
+  document.body.classList.remove("body-blink");
+
+  document.querySelector(".stripe-mask-border").classList.remove("hidden");
+  document.querySelector(".stripe-alert-text").classList.remove("hidden");
+
+}, 10000); // 10秒
+</script>
+
+<style>
+/* --------------------------
+   ● 1. body の点滅
+--------------------------- */
+.body-blink {
+  animation: blinkBody 0.5s infinite steps(1);
+}
+
+@keyframes blinkBody {
+  0%   { background: red; }
+  50%  { background: white; }
+  100% { background: red; }
+}
+
+/* 最初は非表示 */
+.hidden { display: none; }
+
+/* --------------------------
+   ● 2. テーブル部分は白で固定
+--------------------------- */
+.table-wrapper {
+  position: relative;
+  display: inline-block;
+  padding: 20px;
+  border-radius: 24px;
+}
+
+.demo-table {
+  width: 600px;
+  border-collapse: collapse;
+  background: white; /* 念のため */
+}
+.demo-table th, .demo-table td {
+  border: 1px solid #ddd;
+  padding: 12px 16px;
+}
+
+/* --------------------------
+   ● 3. 斜めストライプ枠
+--------------------------- */
+.stripe-mask-border {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+
+  background: repeating-linear-gradient(
+    45deg,
+    #FFD400 0 10px,
+    #000     10px 20px
+  );
+
+  padding: 20px;
+  border-radius: 24px;
+
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  animation: blinkBorder 0.6s infinite steps(1);
+}
+
+@keyframes blinkBorder {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* --------------------------
+   ● 4. 注意テキスト
+--------------------------- */
+.stripe-alert-text {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  font-size: 20px;
+  color: red;
+  pointer-events: none;
+  z-index: 10000;
+
+  animation: blinkBorder 0.6s infinite steps(1);
+}
+</style>
+</body>
