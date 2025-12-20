@@ -1,0 +1,14 @@
+{
+  "db": {
+    "type": "mysql",
+    "host": "localhost",
+    "user": "root",
+    "password": "password",
+    "dbname": "test"
+  },
+  "excel_path": "test.xlsx",
+  "interval": 1,
+  "limit": null,
+  "start_row": 2,
+  "end_row": null
+}
