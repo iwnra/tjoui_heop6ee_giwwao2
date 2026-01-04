@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="common/head :: head_fragment(title = '顧客新規登録', scripts = ~{::script}, links = ~{::link})"></head>
+    <body>
+		<table class="history-table">
+		    <thead>
+		        <tr>
+		            <th>サイズNo</th>
+		            <th>厚み</th>
+		            <th>幅</th>
+		            <th>長さ</th>
+		            <th>材種</th>
+		            <th>枚数</th>
+		            <th>生産性</th>
+		        </tr>
+		    </thead>
+		    <tbody id="history-body">
+		        <tr th:each="row : ${historyList}">
+		            <td th:text="${row.sizeNo}"></td>
+		            <td th:text="${row.thickness}"></td>
+		            <td th:text="${row.width}"></td>
+		            <td th:text="${row.length}"></td>
+		            <td th:text="${row.material}"></td>
+		            <td th:text="${row.count}"></td>
+		            <td th:text="${row.productivity}"></td>
+		        </tr>
+		    </tbody>
+		</table>
+    </body>
+</html>
