@@ -51,7 +51,7 @@ public final class CalcUtil {
 	 * 除算（a / b）
 	 */
 	public static BigDecimal div(BigDecimal a, BigDecimal b) {
-		//if (a == null || b == null || b.signum() == 0) {
+		// if (a == null || b == null || b.signum() == 0) {
 		if (a == null || b == null || b.compareTo(BigDecimal.ZERO) == 0) {
 			return BigDecimal.ZERO;
 		}
@@ -61,7 +61,7 @@ public final class CalcUtil {
 	/**
 	 * べき乗
 	 * 
-	 * @param base 底
+	 * @param base     底
 	 * @param exponent 指数
 	 */
 	public static BigDecimal pow(BigDecimal base, int exponent) {
@@ -72,7 +72,7 @@ public final class CalcUtil {
 	}
 
 	/**
-	 * 百分率に変換（小数第二位で四捨五入）
+	 * パーセントに変換（小数第二位で四捨五入）
 	 */
 	public static BigDecimal toPercent(BigDecimal value) {
 		if (value == null) {
@@ -81,9 +81,9 @@ public final class CalcUtil {
 		return mul(value, BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
 	}
 
-	//a.compareTo(b) > 0 ... a > b
-	//a.compareTo(b) == 0 ... a == b
-	//a.compareTo(b) < 0 ... a < b
+	// a.compareTo(b) > 0 ... a > b
+	// a.compareTo(b) == 0 ... a == b
+	// a.compareTo(b) < 0 ... a < b
 
 	/**
 	 * Long (long) を BigDecimal に変換
@@ -112,7 +112,7 @@ public final class CalcUtil {
 	 * String を BigDecimal に変換
 	 */
 	public static BigDecimal toBigDecimal(String value) {
-		if (value == null || value.trim().isEmpty()) {
+		if (value == null || value.isBlank()) {
 			return BigDecimal.ZERO;
 		}
 
@@ -121,5 +121,12 @@ public final class CalcUtil {
 		} catch (NumberFormatException e) {
 			return BigDecimal.ZERO;
 		}
+	}
+
+	/**
+	 * 指定の桁数で四捨五入
+	 */
+	public static BigDecimal round(BigDecimal value, int scale) {
+		return value.setScale(scale, RoundingMode.HALF_UP);
 	}
 }

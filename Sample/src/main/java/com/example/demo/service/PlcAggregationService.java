@@ -20,10 +20,10 @@ public class PlcAggregationService {
 
 	// 振り分けパターン
 	// patternNo -> grade[6]（box1〜6）
-	private static final Map<Integer, String[]> PATTERN_MAP = Map.of(
-			1, new String[] { GRADE_A, GRADE_A, GRADE_A, GRADE_B, GRADE_D, GRADE_D },
-			2, new String[] { GRADE_A, GRADE_A, GRADE_B, GRADE_B, GRADE_D, GRADE_D },
-			3, new String[] { GRADE_A, GRADE_A, GRADE_B, GRADE_B, GRADE_B, GRADE_D }
+	private static final Map<Integer, String[]> PATTERN_MAP = Map.of(1,
+			new String[] { GRADE_A, GRADE_A, GRADE_A, GRADE_B, GRADE_D, GRADE_D }, 2,
+			new String[] { GRADE_A, GRADE_A, GRADE_B, GRADE_B, GRADE_D, GRADE_D }, 3,
+			new String[] { GRADE_A, GRADE_A, GRADE_B, GRADE_B, GRADE_B, GRADE_D }
 	// ～ No.10
 	);
 
@@ -41,14 +41,7 @@ public class PlcAggregationService {
 		PlcEntity row = new PlcEntity();
 
 		// box1〜6の値を配列化
-		int[] boxes = {
-				row.getBox1(),
-				row.getBox2(),
-				row.getBox3(),
-				row.getBox4(),
-				row.getBox5(),
-				row.getBox6()
-		};
+		int[] boxes = { row.getBox1(), row.getBox2(), row.getBox3(), row.getBox4(), row.getBox5(), row.getBox6() };
 
 		// パターン（BOX → A品/B品/D品）
 		String[] pattern = PATTERN_MAP.get(row.getPatternNo());
@@ -77,9 +70,9 @@ public class PlcAggregationService {
 		}
 		return toPercent(div(BigDecimal.valueOf(value), BigDecimal.valueOf(total)));
 	}
-	//		return BigDecimal.valueOf(value)
-	//				.multiply(cmn.HUNDRED)
-	//				.divide(BigDecimal.valueOf(total), 1, RoundingMode.DOWN);
+	// return BigDecimal.valueOf(value)
+	// .multiply(cmn.HUNDRED)
+	// .divide(BigDecimal.valueOf(total), 1, RoundingMode.DOWN);
 
 	/**
 	 * 色判定

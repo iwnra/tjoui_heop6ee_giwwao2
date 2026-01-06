@@ -12,15 +12,15 @@ public final class DisplayUtil {
 	}
 
 	/**
-	 * 数値（BigDecimal）を画面表示用にフォーマット
+	 * 数値（BigDecimal）を画面表示用にフォーマット ※端数処理あり
 	 * 
-	 * @param value 対象の数値
-	 * @param scale 小数点以下の桁数
+	 * @param value    対象の数値
+	 * @param scale    小数点以下の桁数
 	 * @param trimZero trueの場合、末尾の不要な0を表示しない（例：1.50 → 1.5）
 	 * @return フォーマット後の文字列
 	 */
 	public static String format(BigDecimal value, int scale, boolean trimZero) {
-		// nullの場合はゼロとして扱う
+		// nullの場合は0として扱う
 		BigDecimal target = (value == null) ? BigDecimal.ZERO : value;
 
 		// 指定の桁数で四捨五入
@@ -32,6 +32,26 @@ public final class DisplayUtil {
 		} else {
 			// 指定した桁数まで0埋め
 			return rounded.toPlainString();
+		}
+	}
+
+	/**
+	 * 数値（BigDecimal）を画面表示用にフォーマット ※端数処理なし
+	 * 
+	 * @param value    対象の数値
+	 * @param trimZero trueの場合、末尾の不要な0を表示しない（例：1.50 → 1.5）
+	 * @return フォーマット後の文字列
+	 */
+	public static String format(BigDecimal value, boolean trimZero) {
+		// nullの場合は0として扱う
+		BigDecimal target = (value == null) ? BigDecimal.ZERO : value;
+
+		if (trimZero) {
+			// 末尾の0をカット
+			return target.stripTrailingZeros().toPlainString();
+		} else {
+			// 保持している値のまま
+			return target.toPlainString();
 		}
 	}
 

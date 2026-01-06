@@ -13,12 +13,12 @@ import lombok.Data;
 @Data
 public class SizeInfoEntity {
 	private Long id; // ID
-    private Integer sizeNo;
-    private BigDecimal thickness; // 厚み
-    private Integer width;     // 幅
-    private Integer length;    // 長さ
-    private String material;  // 材種
-    private Integer count;     // 枚数
+	private Integer sizeNo;
+	private BigDecimal thickness; // 厚み
+	private Integer width; // 幅
+	private Integer length; // 長さ
+	private String material; // 材種
+	private Integer count; // 枚数
 	private String operationKbn; // 稼働区分
 	private Integer a; // A品
 	private Integer b; // B品
@@ -33,10 +33,6 @@ public class SizeInfoEntity {
 	 * PlcSummaryDtoに変換
 	 */
 	public PlcSummaryDto toPlcSummaryDto() {
-	    return new PlcSummaryDto(
-	        a != null ? a : 0,
-	        b != null ? b : 0,
-	        d != null ? d : 0
-	    );
+		return new PlcSummaryDto(a != null ? a : 0, b != null ? b : 0, d != null ? d : 0);
 	}
 }

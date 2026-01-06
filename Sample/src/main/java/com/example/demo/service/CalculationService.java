@@ -47,12 +47,11 @@ public class CalculationService {
 
 		List<SizeInfoEntity> entityList = new ArrayList<>();
 		boolean isEnd = entityList.get(0).getEndDate() != null;
-		PlcSummaryDto totalSummary = entityList.stream()
-				.skip(isEnd ? 0 : 1) // リストの1行目をスキップ
+		PlcSummaryDto totalSummary = entityList.stream().skip(isEnd ? 0 : 1) // リストの1行目をスキップ
 				// equalsメソッドは定数を左側にすると安全（引数がnullの場合は結果がfalseになる）
 				.filter(e -> "1".equals(e.getOperationKbn())) // 稼働区分が1の場合のみ集計
 				.map(SizeInfoEntity::toPlcSummaryDto)
-				//			    .reduce(PlcSummaryDto.empty(), PlcSummaryDto::add);
+				// .reduce(PlcSummaryDto.empty(), PlcSummaryDto::add);
 				.reduce(calcDto, PlcSummaryDto::add); // PLCの値にサイズ情報の値を加算
 
 		return dto;
@@ -102,7 +101,7 @@ public class CalculationService {
 					dto.setProductivity(format(plc.getARate(), 2, false));
 				} else {
 					dto.setCount(String.valueOf(sizeInfo.getCount()));
-					//	 dto.setProductivity(format(entity.getProductivity()));
+					// dto.setProductivity(format(entity.getProductivity()));
 				}
 			}
 			historyList.add(dto);
@@ -110,10 +109,8 @@ public class CalculationService {
 		return historyList;
 	}
 
-	public BigDecimal calculate(
-			BigDecimal v1, BigDecimal v2, BigDecimal v3,
-			BigDecimal v4, BigDecimal v5, BigDecimal v6,
-			BigDecimal v7, BigDecimal v8, BigDecimal v9) {
+	public BigDecimal calculate(BigDecimal v1, BigDecimal v2, BigDecimal v3, BigDecimal v4, BigDecimal v5,
+			BigDecimal v6, BigDecimal v7, BigDecimal v8, BigDecimal v9) {
 
 		// 式: ((9.5 + 1.2) / 1000 * (1000 + 50) / 1200 * 1200 / 950) * 3000
 
@@ -130,9 +127,7 @@ public class CalculationService {
 		return mul(mul(mul(step1, step2), step3), v9);
 	}
 
-	public BigDecimal calculate2(
-			BigDecimal v1, BigDecimal v2, BigDecimal v3,
-			BigDecimal v4, BigDecimal v5) {
+	public BigDecimal calculate2(BigDecimal v1, BigDecimal v2, BigDecimal v3, BigDecimal v4, BigDecimal v5) {
 
 		// 式: 9.5 * 1000 * 1200 * 3000 / 1000 ^ 3
 

@@ -23,27 +23,24 @@ public class PlcSummaryDto {
 	/** D品 */
 	int d;
 
-	//	@Value を使用することで以下のコンストラクタを自動生成
+	// @Value を使用することで以下のコンストラクタを自動生成
 	// また、メンバに private final が自動付与されるため修飾子は付けない
-	//	public PlcSummaryDto(int a, int b, int d) {
-	//		this.a = a;
-	//		this.b = b;
-	//		this.d = d;
-	//	}
+	// public PlcSummaryDto(int a, int b, int d) {
+	// this.a = a;
+	// this.b = b;
+	// this.d = d;
+	// }
 
 	/**
-	* 各品質に指定された値を加算した新しいDTOを返す
-	* 
-	* @param addA A品に加算する値
-	* @param addB B品に加算する値
-	* @param addD D品に加算する値
-	* @return 加算後の新しいPlcSummaryDto
-	*/
+	 * 各品質に指定された値を加算した新しいDTOを返す
+	 * 
+	 * @param addA A品に加算する値
+	 * @param addB B品に加算する値
+	 * @param addD D品に加算する値
+	 * @return 加算後の新しいPlcSummaryDto
+	 */
 	public PlcSummaryDto add(int addA, int addB, int addD) {
-		return new PlcSummaryDto(
-				this.a + addA,
-				this.b + addB,
-				this.d + addD);
+		return new PlcSummaryDto(this.a + addA, this.b + addB, this.d + addD);
 	}
 
 	/**
