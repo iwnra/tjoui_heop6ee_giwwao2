@@ -1,0 +1,245 @@
+/* 1920x1080 フルスクリーン最適化 */
+body {
+    background-color: #000c1d;
+    color: #ffffff;
+    font-family: "Meiryo", sans-serif;
+    margin: 0;
+    padding: 20px;
+    width: 1920px;
+    height: 1080px;
+    box-sizing: border-box;
+    overflow: hidden; /* スクロールバーを出さない */
+}
+.box {
+    border: 2px solid #ffffff;
+    display: flex;
+    box-sizing: border-box;
+}
+
+/* 共通 */
+.danger {
+    color: #ff3b3b;
+}
+.bg-yellow {
+    background-color: #f0e68c;
+    color: #000c1d;
+}
+.bg-pink {
+    background-color: #ffb6c1;
+}
+
+.block-1 {
+    display: flex;
+    width: 100%;
+}
+.block-2 {
+    display: block;
+    width: 56.5%;
+    margin-right: 15px;
+}
+
+/* 班累計品質 */
+.top-row {
+    display: flex;
+    height: 230px;
+    width: 100%;
+    background-color: #ffffff;
+    color: #000c1d;
+}
+.total-box {
+    flex: 1.3;
+    justify-content: center;
+    gap: 40px;
+    align-items: center;
+    border: none;
+    border-right: 5px solid #000c1d;
+}
+.label-huge {
+    font-size: 80px;
+    font-weight: bold;
+}
+.value-huge {
+    font-size: 130px;
+    font-weight: bold;
+}
+.value-huge small {
+    font-size: 40px;
+}
+.progress-sub {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.sub-box {
+    flex: 1;
+    justify-content: space-between;
+    padding: 0 20px;
+    align-items: center;
+    border: none;
+}
+.top-border {
+    border-top: 5px solid #000c1d;
+}
+.label-md {
+    font-size: 55px;
+    font-weight: bold;
+}
+.value-md {
+    font-size: 70px;
+    font-weight: bold;
+}
+.value-md small {
+    font-size: 30px;
+    color: #000c1d;
+}
+
+/* 現在サイズ情報 */
+.current-row {
+    margin-top: 25px;
+    height: 190px;
+    padding: 0;
+    width: 100%;
+}
+.current-label-group {
+    width: 200px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.current-status {
+    height: 50%;
+    font-size: 37px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.current-code {
+    height: 50%;
+    font-size: 60px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.current-size {
+    flex: 1;
+    font-size: 90px;
+    font-weight: bold;
+    border-left: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.current-stats {
+    padding: 0;
+    width: 100%;
+    display: flex;
+}
+.stat-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    height: 85px;
+}
+.stat-label {
+    background-color: #d1d5db;
+    color: #000c1d;
+    font-size: 40px;
+    font-weight: bold;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.stat-value {
+    font-size: 65px;
+    font-weight: bold;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.current-stats div:nth-child(4) {
+    border-right: 2px solid #fff;
+}
+
+/* 当日実績 */
+.history-box {
+    border: none;
+    flex-direction: column;
+    width: 43%;
+}
+.history-box table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 35px;
+    font-weight: bold;
+}
+.history-box th {
+    background-color: #d1d5db;
+    color: #000c1d;
+    border: 2px solid #fff;
+    padding: 10px;
+    font-size: 28px;
+}
+.history-box td {
+    border: 2px solid #fff;
+    padding: 0 10px;
+    height: 75px;
+    text-align: center;
+}
+.history-box td:first-child {
+    font-size: 28px;
+}
+.box-title {
+    font-size: 35px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* 不良因子 */
+.defect-container {
+    display: grid;
+    /* 縦3段、高さ固定 */
+    grid-template-rows: repeat(3, 150px); 
+    /* 縦方向のカード同士の隙間 */
+    row-gap: 15px;
+    
+    /* 横方向の配置設定：列の間隔を画面幅いっぱいに均等に広げる */
+    grid-auto-flow: column;
+    align-content: space-between;
+    justify-content: space-between; 
+    
+    margin-top: 25px;
+    width: 100%; /* 1920px一杯に広げる */
+}
+.defect-card {
+    width: 145px;
+    border: 2px solid #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+.defect-label {
+    text-align: center;
+    padding: 5px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #000c1d;
+}
+.b-label {
+    background-color: #cdebc5;
+}
+.d-label {
+    background-color: #ffb38a;
+}
+.defect-count {
+    font-size: 56px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+}

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.MonitorMapper">
+	
+<!--	<select id="selectSummary" resultType="com.example.demo.dto.MonitorSummaryDto">-->
+<!--		SELECT-->
+<!--		    ROUND(SUM(good_qty) / NULLIF(SUM(total_qty),0) * 100, 1) AS totalQuality,-->
+<!--		    ROUND(SUM(CASE WHEN type = 'GENERAL' THEN good_qty END)-->
+<!--		        / NULLIF(SUM(CASE WHEN type = 'GENERAL' THEN total_qty END),0) * 100, 1)-->
+<!--		        AS generalQuality,-->
+<!--		    ROUND(SUM(CASE WHEN type = 'FLOOR' THEN good_qty END)-->
+<!--		        / NULLIF(SUM(CASE WHEN type = 'FLOOR' THEN total_qty END),0) * 100, 1)-->
+<!--		        AS floorQuality-->
+<!--		FROM production_summary-->
+<!--		WHERE production_date = #{date}-->
+<!--	</select>-->
+	
+	<select id="selectCurrent" resultType="com.example.demo.dto.CurrentDto">
+		SELECT
+			設定情報 AS 'setting'
+			, 区分 AS settingClass
+			, 材種 AS material
+			, CONCAT(厚み, ' × ', 幅, ' × ', 長さ) AS size
+		FROM
+			サイズ別
+		WHERE
+			作業時間id = #{id}
+		ORDER BY
+			開始日時 DESC
+		LIMIT 1
+	</select>
+	
+	<select id="selectTodayHistory" resultType="com.example.demo.dto.HistoryDto">
+		SELECT
+			s.設定情報 AS setting
+			, s.区分 AS settingClass
+			, s.材種 AS material
+			, CONCAT(s.厚み, ' × ', s.幅, ' × ', s.長さ) AS size
+			, n.生産枚数 AS count
+		FROM
+			サイズ別 s
+		LEFT JOIN
+			日報 n
+			ON s.id = n.サイズ別id
+		WHERE
+			s.作業時間id = #{id}
+		ORDER BY
+			s.開始日時 DESC
+		LIMIT 5
+	</select>
+	
+	<select id="selectDefects" resultType="com.example.demo.dto.DefectDto">
+		SELECT 
+			m.不良因子名 AS name
+			, m.不良種別 AS type
+			, COALESCE(j.枚数, 0) AS count
+		FROM
+			不良因子マスタ m
+		LEFT JOIN
+			不良実績 j
+			ON m.不良因子コード = j.不良因子コード
+		WHERE
+			j.日報id = #{id}
+		ORDER BY 
+			m.不良種別 ASC
+			, m.不良因子コード ASC
+	</select>
+	
+</mapper>
