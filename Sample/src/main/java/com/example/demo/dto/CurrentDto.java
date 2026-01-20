@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class CurrentDto {
-    private String setting = "a";
+    private String setting;
     private String settingClass;
     private String material;
     private String size;

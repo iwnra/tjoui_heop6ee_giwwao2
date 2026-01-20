@@ -1,109 +1,105 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>生産情報</title>
-    <link rel="stylesheet" th:href="@{/css/furyoinshi.css}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
-    <div class="monitor-screen">
-        <div class="block-1">
-            <div class="block-2">
-                <div class="top-row">
-                    <!-- 班累計品質 -->
-                    <div class="box total-box">
-                        <span class="label-huge">全体</span>
-                        <span class="value-huge" th:text="${data.totalQuality}">97.2<small>%</small></span>
-                    </div>
-                    <div class="progress-sub">
-                        <div class="box sub-box">
-                            <span class="label-md">一般</span>
-                            <span class="value-md" th:text="${data.generalQuality}">98.1<small>%</small></span>
-                        </div>
-                        <div class="box sub-box top-border">
-                            <span class="label-md">フロア</span>
-                            <span class="value-md danger" th:text="${data.floorQuality}">85.5<small>%</small></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 現在サイズ情報 -->
-                <div class="box current-row">
-                    <div class="current-label-group">
-                        <div class="current-status bg-yellow"
-                            th:text="${data.current.setting}">再サンダー
-                        </div>
-                        <div class="current-code" th:text="${data.current.material}">DS</div>
-                    </div>
-                    <div class="current-size" th:text="${data.current.size}">9.2 × 980 × 1200</div>
-                </div>
-                <div class="current-stats">
-                    <div class="stat-block">
-                        <div class="stat-label">生産枚数</div>
-                    </div>
-                    <div class="stat-block">
-                        <div class="stat-value" th:text="${data.current.count}">1985</div>
-                    </div>
-                    <div class="stat-block">
-                        <div class="stat-label">品質</div>
-                    </div>
-                    <div class="stat-block">
-                        <div class="stat-value" th:text="${data.current.quality}">95.3</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 当日実績 -->
-            <div class="box history-box">
-                <div class="box-title">当日実績</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">設定</th>
-                            <th style="width: 10%;">材種</th>
-                            <th style="width: 44%;">厚み × 幅 × 長さ</th>
-                            <th style="width: 17%;">生産枚数</th>
-                            <th style="width: 14%;">品質</th>
-                        </tr>
-                    </thead>
-                    <tbody id="daily-table-body">
-                        <tr th:each="row, stat : ${data.history}">
-                            <td th:text="${row.setting}" class="bg-yellow">再ｻﾝﾀﾞｰ</td>
-                            <td th:text="${row.material}">DS</td>
-                            <td th:text="${row.size}">9.2 × 980 × 1200</td>
-                            <td th:text="${row.count}">1500</td>
-                            <td th:text="${row.quality}">98.5</td>
-                        </tr>
-
-                        <!-- 足りない分は空行 -->
-                        <tr th:each="i : ${#numbers.sequence(1, 5 - data.history.size())}">
-                            <td>&nbsp;</td><td></td><td></td><td></td><td></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 不良因子 -->
-        <div class="defect-container" id="defect-root">
-            <div th:each="d : ${data.defects}" class="defect-card">
-                <div class="defect-label"
-                    th:text="${d.name}"
-                    th:classappend="${d.type == 'B' ? 'b-label' : 'd-label'}">
-                </div>
-                <div class="defect-count" th:text="${d.count}">0</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        $(document).ready(function() {
-            // 初回実行
-            furyoinshi_ajax();
-            // 3秒ごとに更新
-            setInterval(furyoinshi_ajax, 3000);
-        });
-    </script>
-</body>
+	<head th:replace="~{head :: head_fragment('不良因子', ~{::script}, ~{::link})}">
+		<link rel="stylesheet" th:href="@{/css/furyoinshi.css}">
+		<script th:src="@{/js/common.js}"></script>
+	</head>
+	<body>
+	    <div class="monitor-screen">
+	        <div class="block-1">
+	            <div class="block-2">
+	                <div class="top-row">
+	                    <!-- 班累計品質 -->
+	                    <div class="box total-box">
+	                        <span class="label-huge">全体</span>
+	                        <span class="value-huge" th:text="${data.totalQuality}">97.2<small>%</small></span>
+	                    </div>
+	                    <div class="progress-sub">
+	                        <div class="box sub-box">
+	                            <span class="label-md">一般</span>
+	                            <span class="value-md" th:text="${data.generalQuality}">98.1<small>%</small></span>
+	                        </div>
+	                        <div class="box sub-box top-border">
+	                            <span class="label-md">フロア</span>
+	                            <span class="value-md danger" th:text="${data.floorQuality}">85.5<small>%</small></span>
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <!-- 現在サイズ情報 -->
+	                <div class="box current-row">
+	                    <div class="current-label-group">
+	                        <div class="current-status bg-yellow"
+	                            th:text="${data.current.setting}">再サンダー
+	                        </div>
+	                        <div class="current-code" th:text="${data.current.material}">DS</div>
+	                    </div>
+	                    <div class="current-size" th:text="${data.current.size}">9.2 × 980 × 1200</div>
+	                </div>
+	                <div class="current-stats">
+	                    <div class="stat-block">
+	                        <div class="stat-label">生産枚数</div>
+	                    </div>
+	                    <div class="stat-block">
+	                        <div class="stat-value" th:text="${data.current.count}">1985</div>
+	                    </div>
+	                    <div class="stat-block">
+	                        <div class="stat-label">品質</div>
+	                    </div>
+	                    <div class="stat-block">
+	                        <div class="stat-value" th:text="${data.current.quality}">95.3</div>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <!-- 当日実績 -->
+	            <div class="box history-box">
+	                <div class="box-title">当日実績</div>
+	                <table>
+	                    <thead>
+	                        <tr>
+	                            <th style="width: 15%;">設定</th>
+	                            <th style="width: 10%;">材種</th>
+	                            <th style="width: 44%;">厚み × 幅 × 長さ</th>
+	                            <th style="width: 17%;">生産枚数</th>
+	                            <th style="width: 14%;">品質</th>
+	                        </tr>
+	                    </thead>
+	                    <tbody id="daily-table-body">
+	                        <tr th:each="row, stat : ${data.history}">
+	                            <td th:text="${row.setting}" class="bg-yellow">再ｻﾝﾀﾞｰ</td>
+	                            <td th:text="${row.material}">DS</td>
+	                            <td th:text="${row.size}">9.2 × 980 × 1200</td>
+	                            <td th:text="${row.count}">1500</td>
+	                            <td th:text="${row.quality}">98.5</td>
+	                        </tr>
+	
+	                        <!-- 足りない分は空行 
+	                        <tr th:each="i : ${#numbers.sequence(1, 5 - data.history.size())}">
+	                            <td>&nbsp;</td><td></td><td></td><td></td><td></td>
+	                        </tr> -->
+	                    </tbody>
+	                </table>
+	            </div>
+	        </div>
+	
+	        <!-- 不良因子 -->
+	        <div class="defect-container" id="defect-root">
+	            <div th:each="d : ${data.defects}" class="defect-card">
+	                <div class="defect-label"
+	                    th:text="${d.name}"
+	                    th:classappend="${d.type == 'B' ? 'b-label' : 'd-label'}">
+	                </div>
+	                <div class="defect-count" th:text="${d.count}">0</div>
+	            </div>
+	        </div>
+	    </div>
+	
+	    <script>
+	        $(document).ready(function() {
+	            // 3秒ごとに更新
+	            setInterval(furyoinshi_ajax, 3000);
+	        });
+	    </script>
+	</body>
 </html>

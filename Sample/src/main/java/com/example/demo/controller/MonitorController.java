@@ -15,6 +15,12 @@ public class MonitorController {
 	@Autowired
 	private MonitorService service;
 
+	/**
+	 * 初期表示
+	 * 
+	 * @param model
+	 * @return 不良因子画面
+	 */
 	@GetMapping("/furyoinshi")
 	public String index(Model model) {
 		MonitorResponseDto data = service.getData();
@@ -22,6 +28,11 @@ public class MonitorController {
 		return "furyoinshi";
 	}
 
+	/**
+	 * 画面更新
+	 * 
+	 * @return レスポンスDto
+	 */
 	@GetMapping("/furyoinshi_ajax")
 	@ResponseBody
 	public MonitorResponseDto ajax() {

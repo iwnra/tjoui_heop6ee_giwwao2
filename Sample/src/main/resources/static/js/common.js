@@ -44,12 +44,15 @@ function furyoinshi_ajax() {
 		  $(".stat-value").eq(0).text(res.current.production);
 		  $(".stat-value").eq(1).text(res.current.quality);
 		
-		  // defect
+		  // 不良因子
 		  renderDefects(res.defects);
+		  
+		  renderHistory2(res.history);
 		}
 	});
 }
 
+// 不良因子
 function renderDefects(data) {
     const $root = $("#defect-root").empty();
 
@@ -74,4 +77,19 @@ function renderDefects(data) {
         prevType = item.type;
         row++;
     });
+}
+
+function renderHistory2(rows) {
+	const tbody = $('#daily-table-body');
+	tbody.empty();
+	
+	rows.forEach(row => {
+		const tr = $('<tr>');
+		tr.append($('<td>').text(row.setting));
+		tr.append($('<td>').text(row.material));
+		tr.append($('<td>').text(row.size));
+		tr.append($('<td>').text(row.count));
+		tr.append($('<td>').text(row.quality).attr('data-flg', row.flg));
+		tbody.append(tr);
+	});
 }
