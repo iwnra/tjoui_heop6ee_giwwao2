@@ -4,6 +4,8 @@ import static com.example.demo.common.util.CalcUtil.*;
 
 import java.math.BigDecimal;
 
+import com.example.demo.entity.SizeInfoEntity;
+
 import lombok.Value;
 
 /**
@@ -53,6 +55,20 @@ public class PlcSummaryDto {
 		if (other == null)
 			return this; // nullなら自分を返す
 		return add(other.a, other.b, other.d);
+	}
+	
+	/**
+	 * EntityからPlcSummaryDtoを作成
+	 * 
+	 * @param entity 変換元のEntity
+	 * @return PlcSummaryDto
+	 */
+	public static PlcSummaryDto fromEntity(SizeInfoEntity entity) {
+	    return new PlcSummaryDto(
+	        entity.getA() != null ? entity.getA() : 0,
+	        entity.getB() != null ? entity.getB() : 0,
+	        entity.getD() != null ? entity.getD() : 0
+	    );
 	}
 
 	/**

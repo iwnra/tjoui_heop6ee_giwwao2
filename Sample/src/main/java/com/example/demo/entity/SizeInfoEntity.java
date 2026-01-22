@@ -20,6 +20,7 @@ public class SizeInfoEntity {
 	private String material; // 材種
 	private Integer count; // 枚数
 	private String operationKbn; // 稼働区分
+	private String kubun; // 区分
 	private Integer a; // A品
 	private Integer b; // B品
 	private Integer d; // D品
