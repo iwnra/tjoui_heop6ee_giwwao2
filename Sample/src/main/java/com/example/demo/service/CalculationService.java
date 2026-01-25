@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.common.enums.DisplayPattern;
 import com.example.demo.dto.HistoryRowDto;
 import com.example.demo.dto.PlcRateViewDto;
 import com.example.demo.dto.PlcSummaryDto;
@@ -103,6 +104,10 @@ public class CalculationService {
 					dto.setCount(String.valueOf(sizeInfo.getCount()));
 					// dto.setProductivity(format(entity.getProductivity()));
 				}
+				
+				// 表示判定（最後）
+		        DisplayPattern pattern = DisplayPattern.judge(sizeInfo);
+		        dto.applyDisplay(pattern);
 			}
 			historyList.add(dto);
 		}

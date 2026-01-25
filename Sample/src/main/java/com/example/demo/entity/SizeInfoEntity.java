@@ -21,6 +21,10 @@ public class SizeInfoEntity {
 	private Integer count; // 枚数
 	private String operationKbn; // 稼働区分
 	private String kubun; // 区分
+	private String recutKbn; // 再カット区分
+	private String countKbn; // 枚数計上区分
+	private String upgradeKbn; // 格上げ区分
+	private String notWorkingKbn; // 未稼働区分
 	private Integer a; // A品
 	private Integer b; // B品
 	private Integer d; // D品
