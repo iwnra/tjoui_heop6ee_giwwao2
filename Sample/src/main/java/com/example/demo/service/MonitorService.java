@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,10 @@ public class MonitorService {
 
 	@Autowired
 	private MonitorMapper mapper;
+	
+	private static final int RATE_WHITE = 95;
+	private static final int RATE_YELLOW = 90;
+	private static final int RATE_RED = 85;
 
 	/**
 	 * データ取得
@@ -66,6 +71,18 @@ public class MonitorService {
 		
 		SizeInfoEntity targetEntity = determineCalculationTarget(sizeInfoList);
 
+		BigDecimal totalProduction = BigDecimal.ZERO;
+		for (SizeInfoEntity e : sizeInfoList) {
+		    BigDecimal production =
+		            e.getThickness()
+		             .multiply(e.getWidth())
+		             .multiply(e.getLength())
+		             .multiply(BigDecimal.valueOf(e.getCount()))
+		             .divide(THOUSAND_CUBED);
+		    totalProduction = totalProduction.add(production);
+		}
+
+		
 		return res;
 	}
 
@@ -136,6 +153,19 @@ public class MonitorService {
 
 	    // 条件3: 上記以外（1件のみ、または1件目が未入力状態など）
 	    return first; // 1件目を対象とする
+	}
+	
+	private String getDRateColor(int rate) {
+	    if (rate >= RATE_WHITE) {
+	        return "white";
+	    }
+	    if (rate >= RATE_YELLOW) {
+	        return "yellow";
+	    }
+	    if (rate >= RATE_RED) {
+	        return "red";
+	    }
+	    return "black";
 	}
 
 }
