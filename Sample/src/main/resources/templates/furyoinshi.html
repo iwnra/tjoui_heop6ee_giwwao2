@@ -101,5 +101,18 @@
 	            setInterval(furyoinshi_ajax, 3000);
 	        });
 	    </script>
+		<script th:inline="javascript">
+			 /*<![CDATA[*/
+			const initList = /*[[${initList}]]*/ []; 
+			$(function () {
+				initPage(initList);
+			});
+			/*]]>*/
+		</script>
+		<script th:inline="javascript">
+			/*<![CDATA[*/
+			commonChange.initList = /*[[${initList}]]*/ [];
+			/*]]>*/
+		</script>
 	</body>
 </html>

@@ -93,3 +93,41 @@ function renderHistory2(rows) {
 		tbody.append(tr);
 	});
 }
+
+function initPage(initList) {
+	$('[data-code]').each(function () {
+		const $el = $(this);
+		const code = $el.data('code');
+		const match = initList.find(v => v.code === code);
+		if (match) {
+			$el.val(match.value);
+		}
+	});
+}
+
+var commonChange = {
+    initList: []
+};
+
+// some は配列の要素が**「ひとつでも条件を満たしているか」**をチェックする
+function containsValue(list, target) {
+    if (!list) return false;
+    // 両方を文字列に変換して比較
+    return list.some(item => String(item) === String(target));
+}
+// 使用するとき
+if (containsValue(commonChange.initList, $('#targetValue').val())) {
+    // 存在する時の処理
+}
+
+// includes は**厳密な比較（===）**を行う
+const stringList = commonChange.initList.map(item => String(item));
+if (stringList.includes(String(inputValue))) {
+    // 存在する時の処理
+}
+
+// filter は「条件に合うものをすべて抽出して新しい配列を作る」関数
+const matches = commonChange.initList.filter(item => String(item) === String(inputValue));
+if (matches.length > 0) {
+    // 存在する時の処理
+}
