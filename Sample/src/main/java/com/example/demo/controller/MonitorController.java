@@ -1,12 +1,15 @@
 package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.demo.dto.EvacuationDto;
 import com.example.demo.dto.MonitorResponseDto;
+import com.example.demo.service.CommonService;
+import com.example.demo.service.EmailService;
 import com.example.demo.service.MonitorService;
 
 @Controller
@@ -14,6 +17,12 @@ public class MonitorController {
 
 	@Autowired
 	private MonitorService service;
+
+	@Autowired
+	private CommonService commonService;
+
+	@Autowired
+	private EmailService emailService;
 
 	/**
 	 * 初期表示
@@ -28,14 +37,43 @@ public class MonitorController {
 		return "furyoinshi";
 	}
 
+//	/**
+//	 * 画面更新
+//	 * 
+//	 * @return レスポンスDto
+//	 */
+//	@GetMapping("/furyoinshi_ajax")
+//	@ResponseBody
+//	public MonitorResponseDto ajax() {
+//		return service.getData();
+//	}
+
 	/**
 	 * 画面更新
 	 * 
 	 * @return レスポンスDto
 	 */
 	@GetMapping("/furyoinshi_ajax")
-	@ResponseBody
-	public MonitorResponseDto ajax() {
-		return service.getData();
+	public ResponseEntity<?> ajax() {
+		// 1. 共通サービスで避難指示を最優先チェック
+		// MONITOR_A は Java側で定義した定数（Enum等）
+		EvacuationDto alert = commonService.checkEvacuation("MONITOR_A");
+
+		if (alert != null) {
+			// 避難指示があれば、通常のDB検索（重い処理など）をスキップして即返却
+			return ResponseEntity.ok(alert);
+		}
+
+		// 2. 通常の監視ロジック（ここには到達しない）
+		MonitorResponseDto data = service.getData();
+		return ResponseEntity.ok(data);
+	}
+
+	/**
+	 * メール自動送信
+	 */
+	@GetMapping("/sendEmail")
+	public void sendEmail() {
+		emailService.sendEmail("宛先", "件名", "本文");
 	}
 }
