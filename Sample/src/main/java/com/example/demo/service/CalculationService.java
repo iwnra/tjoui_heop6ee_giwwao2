@@ -107,7 +107,7 @@ public class CalculationService {
 				
 				// 表示判定（最後）
 		        DisplayPattern pattern = DisplayPattern.judge(sizeInfo);
-		        dto.applyDisplay(pattern);
+//		        dto.applyDisplay(pattern);
 			}
 			historyList.add(dto);
 		}

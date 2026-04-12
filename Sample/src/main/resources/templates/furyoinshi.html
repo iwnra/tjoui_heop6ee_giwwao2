@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 	<head th:replace="~{head :: head_fragment('不良因子', ~{::script}, ~{::link})}">
 		<link rel="stylesheet" th:href="@{/css/furyoinshi.css}">
-		<script th:src="@{/js/common.js}"></script>
 	</head>
 	<body>
 	    <div class="monitor-screen">
@@ -97,11 +96,12 @@
 	
 	    <script>
 	        $(document).ready(function() {
+	        	window.isSystemActive = true;
 	            // 3秒ごとに更新
 	            setInterval(furyoinshi_ajax, 3000);
 	        });
 	    </script>
-		<script th:inline="javascript">
+<!-- 		<script th:inline="javascript">
 			 /*<![CDATA[*/
 			const initList = /*[[${initList}]]*/ []; 
 			$(function () {
@@ -113,6 +113,6 @@
 			/*<![CDATA[*/
 			commonChange.initList = /*[[${initList}]]*/ [];
 			/*]]>*/
-		</script>
+		</script> -->
 	</body>
 </html>

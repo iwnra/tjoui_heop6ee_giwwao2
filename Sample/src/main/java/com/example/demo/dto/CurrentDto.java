@@ -14,17 +14,20 @@ public class CurrentDto {
     private String size;
     private Integer count;
     private BigDecimal quality;
+    private boolean showTotal;
     
     public void applyDisplay(DisplayPattern p) {
         switch (p) {
             case RECUT:
-            	setting = "再カット中";
+            	setting = "再カット";
                 showTotal = true;
                 break;
             case NOT_COUNTED:
+            	setting = "再サンダー";
                 showTotal = false;
                 break;
             default:
+            	setting = "";
                 showTotal = true;
         }
     }

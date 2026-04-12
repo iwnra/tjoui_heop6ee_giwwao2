@@ -14,6 +14,8 @@ public class HistoryDto {
     private String size;
     private Integer count;
     private BigDecimal quality;
+    private boolean showSize;
+    private boolean showQuality;
     
     public void applyDisplay(DisplayPattern p) {
         switch (p) {

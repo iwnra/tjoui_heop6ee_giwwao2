@@ -37,7 +37,13 @@ public class EmailService {
 			mailSender.send(message);
 
 		} catch (Exception e) {
+//			e.printStackTrace(); // 標準エラー出力
+			
+			// エラーログ
 			logger.error("メールの送信に失敗しました。宛先: {}", to, e); 
+		    
+		    // 画面にエラーを伝えるための処理（例外を投げ直すなど）
+		    throw new RuntimeException("メール送信に失敗しました。");
 		}
 	}
 }

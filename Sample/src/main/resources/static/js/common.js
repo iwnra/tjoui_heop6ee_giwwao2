@@ -1,53 +1,135 @@
-function updateHistory() {
-	$.ajax({
-		url: '/api/production/history', // 履歴取得API
-		method: 'GET',
-		success: function(data) {
-			renderHistory(data.rows);
+/**
+ * Tomcat自動復帰＆通信制御スクリプト（jQuery版）
+ */
+$(function() {
+	window.isSystemActive = true; // 通信許可フラグ
+	let isMonitoring = false;      // 監視二重起動防止フラグ
+	const CHECK_INTERVAL = 5000;   // 復帰確認の間隔（5秒）
+
+	// --- 待機画面の表示 ---
+	function showRecoveryOverlay(title, message) {
+		if ($('#recovery-overlay').length > 0) return;
+        
+		const $overlay = $('<div>', { id: 'recovery-overlay' })
+			.html(`
+				<div class="recovery-content">
+					<h1>${title}</h1>
+					<p>${message}</p>
+					<div class="loader"></div>
+				</div>
+			`);
+		$('body').append($overlay);
+	}
+    
+	// --- 一時的なエラーメッセージの表示 ---
+	function showTemporaryMessage(message) {
+		const id = "temp-error-msg";
+		if ($('#' + id).length > 0) return; // 重複防止
+
+		const $msg = $('<div>', { id: id }).text(message);	
+		$('body').append($msg);
+
+		// 2秒後に自動で消す（0.5秒かけてフェードアウト）
+		$msg.delay(2000).fadeOut(500, () => $msg.remove());
+	}
+
+	// --- サーバー復帰の監視 ---
+	function startHealthCheck() {
+		if (isMonitoring) return;
+		isMonitoring = true;
+
+		// 元のAjax通信を止めるフラグを倒す
+		window.isSystemActive = false;
+
+		console.warn("Monitor: サーバー停止を検知。監視を開始します。");
+
+		const timer = setInterval(function() {
+			console.log("Monitor: 復帰確認中...");
+
+			$.ajax({
+				url: '/', 
+				type: 'HEAD',
+				cache: false,
+				global: false,
+				// success だけでなく、完了(complete)時の中身で判定する
+				complete: function(xhr) {
+					// statusが0以外なら、サーバーは「応答」している（200OKや404など）
+					if (xhr.status > 0) {
+						console.log("Monitor: 復帰を検知しました！ (Status: " + xhr.status + ")");
+						clearInterval(timer);
+						window.stop();
+						location.reload();
+					} else {
+						console.log("Monitor: まだ応答がありません (Status: " + xhr.status + ")");
+					}
+				}
+			});
+		}, CHECK_INTERVAL);
+	}
+
+	// --- Ajaxエラーハンドラ ---
+	$(document).ajaxError(function(event, xhr, settings) {
+		if (xhr.status === 0) {
+			// Tomcat停止時（接続拒否）
+			showRecoveryOverlay("サーバー再起動中", "通信エラーを検知しました。<br>復帰後、自動的に画面を更新します。");
+			startHealthCheck();
+		} else if (xhr.status >= 500) {
+			// サーバー内部エラー時（Java側の例外など）
+			showTemporaryMessage("システムエラー：一時的なエラーが発生しました。システム管理者へお知らせください。");
+
+			// サーバーから返されたJSON
+			const errorData = xhr.responseJSON;
+			if (errorData) {
+				// JSONの中身をすべてコンソールに出力
+				console.dir(errorData);
+
+				// 特定のメッセージを表示したい場合
+				if (errorData.message) {
+					console.warn("Error Message:", errorData.message);
+				}
+			} else {
+				// JSONが返ってこなかった場合のフォールバック
+				console.log("Response Text:", xhr.responseText);
+				console.log("HTTP Status:", xhr.status);
+			}
+			return;
 		}
 	});
-}
-
-function renderHistory(rows) {
-	const tbody = $('#history-body');
-	tbody.empty();
-	
-	rows.forEach(row => {
-		const tr = $('<tr>');
-		tr.append($('<td>').text(row.sizeNo));
-		tr.append($('<td>').text(row.thickness));
-		tr.append($('<td>').text(row.width));
-		tr.append($('<td>').text(row.length));
-		tr.append($('<td>').text(row.material));
-		tr.append($('<td>').text(row.count));
-		tr.append($('<td>').text(row.productivity).attr('data-flg', row.flg));
-		tbody.append(tr);
-	});
-}
+	console.log("Monitor: 起動完了（正常稼働中）");
+});
 
 function furyoinshi_ajax() {
+	if (window.isSystemActive === false) return;
+	
 	$.ajax({
 		url: '/furyoinshi_ajax',
 		method: 'GET',
 		success: function(res) {
-		  $("#totalQuality").text(res.totalQuality);
-		  $("#generalQuality").text(res.generalQuality);
-		  $("#floorQuality").text(res.floorQuality);
 		
-		  // current
-		  $(".current-status")
-		     .text(res.current.settingLabel)
-		     .attr("class", "current-status " + res.current.settingClass);
-		
-		  $(".current-code").text(res.current.material);
-		  $(".current-size").text(res.current.size);
-		  $(".stat-value").eq(0).text(res.current.production);
-		  $(".stat-value").eq(1).text(res.current.quality);
-		
-		  // 不良因子
-		  renderDefects(res.defects);
-		  
-		  renderHistory2(res.history);
+			// evacuationActiveフラグがtrueならSweetAlertを表示
+			if (res.evacuationActive) {
+				showEvacuationAlert(data.imagePath, data.message);
+				return; // 処理終了
+			}
+			
+			$("#totalQuality").text(res.totalQuality);
+			$("#generalQuality").text(res.generalQuality);
+			$("#floorQuality").text(res.floorQuality);
+			
+			// current
+			$(".current-status")
+				.text(res.current.setting)
+				.attr("class", "current-status " + res.current.settingClass);
+			
+			$(".current-code").text(res.current.material);
+			$(".current-size").text(res.current.size);
+			$(".stat-value").eq(0).text(res.current.production);
+			$(".stat-value").eq(1).text(res.current.quality);
+			
+			// 不良因子
+			renderDefects(res.defects);
+			
+			renderHistory(res.history);
 		}
 	});
 }
@@ -79,7 +161,7 @@ function renderDefects(data) {
     });
 }
 
-function renderHistory2(rows) {
+function renderHistory(rows) {
 	const tbody = $('#daily-table-body');
 	tbody.empty();
 	
@@ -94,40 +176,12 @@ function renderHistory2(rows) {
 	});
 }
 
-function initPage(initList) {
-	$('[data-code]').each(function () {
-		const $el = $(this);
-		const code = $el.data('code');
-		const match = initList.find(v => v.code === code);
-		if (match) {
-			$el.val(match.value);
+function sendEmail() {
+	$.ajax({
+		url: '/sendEmail',
+		method: 'GET',
+		success: function() {
+			return false;
 		}
 	});
-}
-
-var commonChange = {
-    initList: []
-};
-
-// some は配列の要素が**「ひとつでも条件を満たしているか」**をチェックする
-function containsValue(list, target) {
-    if (!list) return false;
-    // 両方を文字列に変換して比較
-    return list.some(item => String(item) === String(target));
-}
-// 使用するとき
-if (containsValue(commonChange.initList, $('#targetValue').val())) {
-    // 存在する時の処理
-}
-
-// includes は**厳密な比較（===）**を行う
-const stringList = commonChange.initList.map(item => String(item));
-if (stringList.includes(String(inputValue))) {
-    // 存在する時の処理
-}
-
-// filter は「条件に合うものをすべて抽出して新しい配列を作る」関数
-const matches = commonChange.initList.filter(item => String(item) === String(inputValue));
-if (matches.length > 0) {
-    // 存在する時の処理
 }
