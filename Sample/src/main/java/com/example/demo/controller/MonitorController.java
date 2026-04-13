@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.example.demo.dto.EvacuationDto;
 import com.example.demo.dto.MonitorResponseDto;
 import com.example.demo.service.CommonService;
-import com.example.demo.service.EmailService;
 import com.example.demo.service.MonitorService;
 
 @Controller
@@ -20,9 +19,6 @@ public class MonitorController {
 
 	@Autowired
 	private CommonService commonService;
-
-	@Autowired
-	private EmailService emailService;
 
 	/**
 	 * 初期表示
@@ -67,13 +63,5 @@ public class MonitorController {
 		// 2. 通常の監視ロジック（ここには到達しない）
 		MonitorResponseDto data = service.getData();
 		return ResponseEntity.ok(data);
-	}
-
-	/**
-	 * メール自動送信
-	 */
-	@GetMapping("/sendEmail")
-	public void sendEmail() {
-		emailService.sendEmail("宛先", "件名", "本文");
 	}
 }

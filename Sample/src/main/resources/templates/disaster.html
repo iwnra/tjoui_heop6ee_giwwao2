@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>災害モード選択</title>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script th:src="@{/js/disaster.js}"></script>
+		<link rel="stylesheet" th:href="@{/css/disaster.css}">
+	</head>
+<body>
+	<div class="container">
+	
+	    <h1 class="title">災害モードを選択してください。</h1>
+	
+	    <div class="panel">
+	
+	        <!-- 入れ替えエリア -->
+	        <div class="top-area">
+	            <p id="notice" class="notice">
+	                ※避難誘導表示と同時にメールも送信されます。
+	            </p>
+	
+	            <button id="releaseBtn" class="release-btn">
+	                災害モード解除
+	            </button>
+	        </div>
+	
+	        <!-- 上段 -->
+	        <div class="mode-grid">
+	
+	            <!-- 火災 -->
+	            <div class="mode-card danger" data-mode="fire">
+	                <div class="status">! 災害モード中 !</div>
+	                <div class="icon-wrap">
+	                    <svg viewBox="0 0 48 48" class="icon fire">
+	                        <path d="M24 4C20 12 14 16 14 26c0 8 5 14 10 14s10-6 10-14c0-6-3-10-6-14 1 6-3 10-6 10 0-6 3-10 2-18z"/>
+	                    </svg>
+	                </div>
+	                <div class="label">火災</div>
+	            </div>
+	
+	            <!-- 地震 -->
+	            <div class="mode-card danger" data-mode="earthquake">
+	                <div class="status">! 災害モード中 !</div>
+	                <div class="icon-wrap">
+	                    <svg viewBox="0 0 48 48" class="icon quake">
+	                        <path d="M8 28h6V16h8v12h6V10h8v18h6v10H8z"/>
+	                    </svg>
+	                </div>
+	                <div class="label">地震</div>
+	            </div>
+	
+	            <!-- 津波 -->
+	            <div class="mode-card danger" data-mode="tsunami">
+	                <div class="status">! 災害モード中 !</div>
+	                <div class="icon-wrap">
+	                    <svg viewBox="0 0 48 48" class="icon tsunami">
+	                        <path d="M4 32c8-10 18-10 26 0 4 5 8 5 14 0v8H4z"/>
+	                    </svg>
+	                </div>
+	                <div class="label">津波</div>
+	            </div>
+	
+	        </div>
+	    </div>
+	
+	    <!-- 下段 -->
+	    <div class="sub-grid">
+	
+	        <div class="mode-card sub" data-mode="labor">
+	            <div class="status">! 災害モード中 !</div>
+	            <div class="label">労災<br><span>※メールのみ</span></div>
+	        </div>
+	
+	        <div class="mode-card sub" data-mode="evacuation">
+	            <div class="status">! 災害モード中 !</div>
+	            <div class="label">避難誘導<br><span>※メールなし</span></div>
+	        </div>
+	
+	    </div>
+	
+	</div>
+	</body>
+</html>

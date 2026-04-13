@@ -22,6 +22,17 @@ public class EmailService {
 	 * メール自動送信
 	 */
 	public void sendEmail(String to, String subject, String body) {
+		
+//		Map<String, String> params = new HashMap<>();
+//		params.put("name", user.getName());
+//		params.put("orderId", order.getId());
+//		params.put("date", order.getDate().toString());
+//
+//		String template = mailMaster.getBody();
+//
+//		for (Map.Entry<String, String> entry : params.entrySet()) {
+//		    template = template.replace("${" + entry.getKey() + "}", entry.getValue());
+//		}
 
 		try {
 			SimpleMailMessage message = new SimpleMailMessage();
