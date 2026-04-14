@@ -2,7 +2,7 @@
  * Tomcat自動復帰＆通信制御スクリプト（jQuery版）
  */
 $(function() {
-	window.isSystemActive = true; // 通信許可フラグ
+	window._monitorTimerId = null; // 各画面のタイマーIDを格納（共通で管理）
 	let isMonitoring = false;      // 監視二重起動防止フラグ
 	const CHECK_INTERVAL = 5000;   // 復帰確認の間隔（5秒）
 
@@ -38,8 +38,12 @@ $(function() {
 		if (isMonitoring) return;
 		isMonitoring = true;
 
-		// 元のAjax通信を止めるフラグを倒す
-		window.isSystemActive = false;
+		// 各画面のタイマーをここで確実に止める
+		if (window._monitorTimerId !== null) {
+			clearInterval(window._monitorTimerId);
+			window._monitorTimerId = null;
+			console.warn("Monitor: Ajax通信タイマーを停止しました。");
+		}
 
 		console.warn("Monitor: サーバー停止を検知。監視を開始します。");
 
@@ -57,7 +61,6 @@ $(function() {
 					if (xhr.status > 0) {
 						console.log("Monitor: 復帰を検知しました！ (Status: " + xhr.status + ")");
 						clearInterval(timer);
-						window.stop();
 						location.reload();
 					} else {
 						console.log("Monitor: まだ応答がありません (Status: " + xhr.status + ")");
@@ -99,8 +102,7 @@ $(function() {
 });
 
 function furyoinshi_ajax() {
-	if (window.isSystemActive === false) return;
-	
+
 	$.ajax({
 		url: '/furyoinshi_ajax',
 		method: 'GET',

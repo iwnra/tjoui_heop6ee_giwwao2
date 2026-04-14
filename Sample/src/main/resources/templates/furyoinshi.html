@@ -96,9 +96,8 @@
 	
 	    <script>
 	        $(document).ready(function() {
-	        	window.isSystemActive = true;
 	            // 3秒ごとに更新
-	            setInterval(furyoinshi_ajax, 3000);
+	            window._monitorTimerId = setInterval(furyoinshi_ajax, 3000);
 	        });
 	    </script>
 <!-- 		<script th:inline="javascript">
