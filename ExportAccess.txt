@@ -1,0 +1,67 @@
+Public Sub ExportAllObjectsFromInternal()
+    Dim fso As Object
+    Dim exportDir As String
+    Dim obj As Object
+    
+    ' --- 設定：エクスポート先のフォルダパス ---
+    ' CurrentProject.Path を使うと、このファイルと同じ場所に "src" フォルダを作ります
+    exportDir = CurrentProject.Path & "\exported_src\"
+    
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If Not fso.FolderExists(exportDir) Then fso.CreateFolder (exportDir)
+
+    Debug.Print "--- エクスポート開始 ---"
+
+    ' 1. フォームのエクスポート
+    On Error Resume Next ' エラーやフリーズ対策
+    For Each obj In CurrentProject.AllForms
+        Debug.Print "Form: " & obj.Name
+        Application.SaveAsText 2, obj.Name, exportDir & "Form_" & obj.Name & ".txt"
+        If Err.Number <> 0 Then
+            Debug.Print "  [!] Error: " & obj.Name & " (Code: " & Err.Number & ")"
+            Err.Clear
+        End If
+    Next
+
+    ' 2. レポートのエクスポート
+    For Each obj In CurrentProject.AllReports
+        Debug.Print "Report: " & obj.Name
+        Application.SaveAsText 3, obj.Name, exportDir & "Report_" & obj.Name & ".txt"
+        If Err.Number <> 0 Then
+            Debug.Print "  [!] Error: " & obj.Name & " (Code: " & Err.Number & ")"
+            Err.Clear
+        End If
+    Next
+
+    ' 3. モジュールのエクスポート
+    For Each obj In CurrentProject.AllModules
+        ' 自分自身（このエクスポートコードが入っているモジュール）も書き出されます
+        Debug.Print "Module: " & obj.Name
+        Application.SaveAsText 5, obj.Name, exportDir & "Module_" & obj.Name & ".txt"
+        If Err.Number <> 0 Then
+            Debug.Print "  [!] Error: " & obj.Name & " (Code: " & Err.Number & ")"
+            Err.Clear
+        End If
+    Next
+
+    ' 4. マクロのエクスポート
+    For Each obj In CurrentProject.AllMacros
+        Debug.Print "Macro: " & obj.Name
+        Application.SaveAsText 4, obj.Name, exportDir & "Macro_" & obj.Name & ".txt"
+        If Err.Number <> 0 Then
+            Debug.Print "  [!] Error: " & obj.Name & " (Code: " & Err.Number & ")"
+            Err.Clear
+        End If
+    Next
+    On Error GoTo 0
+
+    Debug.Print "--- エクスポート完了 ---"
+    MsgBox "エクスポートが完了しました。" & vbCrLf & "保存先: " & exportDir
+End Sub
+
+' 特定のオブジェクトをスキップする場合の書き換え:
+For Each obj In CurrentProject.AllForms
+    If obj.Name <> "固まるフォーム名" Then
+        Application.SaveAsText 2, obj.Name, exportDir & "Form_" & obj.Name & ".txt"
+    End If
+Next
