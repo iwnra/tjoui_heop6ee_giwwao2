@@ -1,0 +1,364 @@
+Option Explicit
+
+'==================================================
+' メイン処理：old/new フォルダの Excel を比較
+'==================================================
+Sub CompareExcelFolders()
+
+    Dim folderOld As String
+    Dim folderNew As String
+    Dim fso As Object
+    Dim file As Object
+    Dim log As String
+    Dim skipLog As String
+
+    folderOld = "C:\compare\old\"
+    folderNew = "C:\compare\new\"
+
+    Dim xl As Object
+    Dim book As Object
+    Dim sheet As Object
+    Dim row As Long
+    Dim xlInitialized As Boolean
+    xlInitialized = False
+
+    On Error GoTo ErrorExit
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    log = "=== Excel比較結果 ===" & vbCrLf
+    skipLog = "=== スキップしたファイル ===" & vbCrLf
+
+    '========================
+    ' Excel初期化（出力用）
+    '========================
+    Set xl = CreateObject("Excel.Application")
+    xl.Visible = False
+    Set book = xl.Workbooks.Add
+    Set sheet = book.Sheets(1)
+    sheet.Name = "差異一覧"
+    xlInitialized = True
+
+    row = 1
+    sheet.Cells(row, 1).Value = "File"
+    sheet.Cells(row, 2).Value = "Row"
+    sheet.Cells(row, 3).Value = "Column"
+    sheet.Cells(row, 4).Value = "Old"
+    sheet.Cells(row, 5).Value = "New"
+    row = row + 1
+
+    '========================
+    ' old フォルダの Excel をループ
+    '========================
+    For Each file In fso.GetFolder(folderOld).Files
+
+        Dim ext As String
+        ext = LCase(fso.GetExtensionName(file.Name))
+        If ext <> "xlsx" And ext <> "xls" Then GoTo NextFile
+
+        Dim fileOld As String
+        Dim fileNew As String
+        fileOld = folderOld & file.Name
+        fileNew = folderNew & file.Name
+
+        If Not fso.FileExists(fileNew) Then
+            skipLog = skipLog & file.Name & " → new側に存在しない" & vbCrLf
+            GoTo NextFile
+        End If
+
+        Dim result As String
+        On Error Resume Next
+        result = CompareExcelFiles(xl, fileOld, fileNew, sheet, row)
+        If Err.Number <> 0 Then
+            skipLog = skipLog & file.Name & " → 比較失敗: " & Err.Description & vbCrLf
+            Err.Clear
+            On Error GoTo ErrorExit
+            GoTo NextFile
+        End If
+        On Error GoTo ErrorExit
+
+        If result = "" Then
+            log = log & vbCrLf & "【" & file.Name & "】完全一致" & vbCrLf
+        Else
+            log = log & vbCrLf & "【" & file.Name & "】差異あり" & vbCrLf & result & vbCrLf
+        End If
+
+NextFile:
+    Next file
+
+    '========================
+    ' TXT出力
+    '========================
+    Dim f As Integer
+    f = FreeFile
+    Open "C:\compare\compare_result.txt" For Output As #f
+    Print #f, log
+    Print #f, vbCrLf
+    Print #f, skipLog
+    Close #f
+
+    '========================
+    ' Excel保存・クローズ
+    '========================
+    If xlInitialized Then
+        sheet.Columns.AutoFit
+        On Error Resume Next
+        book.SaveAs "C:\compare\compare_detail.xlsx"
+        If Err.Number <> 0 Then
+            MsgBox "Excel保存失敗: " & Err.Description, vbExclamation, "保存エラー"
+            Err.Clear
+        End If
+        On Error GoTo ErrorExit
+        book.Close False
+        xl.Quit
+        Set sheet = Nothing
+        Set book = Nothing
+        Set xl = Nothing
+        xlInitialized = False
+    End If
+
+    MsgBox "比較完了", vbInformation
+    Exit Sub
+
+'==================================================
+' 共通クリーンアップ
+'==================================================
+ErrorExit:
+    On Error Resume Next
+    If Not book Is Nothing Then book.Close False
+    If Not xl Is Nothing Then xl.Quit
+    Set sheet = Nothing
+    Set book = Nothing
+    Set xl = Nothing
+    MsgBox "エラーが発生したため中断しました。" & vbCrLf & _
+           "エラー内容: " & Err.Description, vbCritical, "異常終了"
+End Sub
+
+
+'==================================================
+' Excel比較（件数・ヘッダー差異・順序差異・実データ差異）
+'==================================================
+Private Function CompareExcelFiles(xl As Object, fileOld As String, fileNew As String, _
+                                   sheet As Object, ByRef row As Long) As String
+
+    Dim bookOld As Object
+    Dim bookNew As Object
+
+    Set bookOld = xl.Workbooks.Open(fileOld, False, True)
+    Set bookNew = xl.Workbooks.Open(fileNew, False, True)
+
+    Dim arrOld As Variant
+    Dim arrNew As Variant
+
+    arrOld = ReadExcelSheet(bookOld.Sheets(1))
+    arrNew = ReadExcelSheet(bookNew.Sheets(1))
+
+    bookOld.Close False
+    bookNew.Close False
+    Set bookOld = Nothing
+    Set bookNew = Nothing
+
+    Dim log As String
+    log = ""
+
+    '========================
+    ' 件数比較（ヘッダー行を除く）
+    '========================
+    Dim cntOld As Long
+    Dim cntNew As Long
+    cntOld = UBound(arrOld, 1) - 1
+    cntNew = UBound(arrNew, 1) - 1
+
+    ' ★ 件数ログを必ず出力
+    log = log & "件数 old=" & cntOld & " new=" & cntNew & vbCrLf
+
+    If cntOld <> cntNew Then
+        CompareExcelFiles = log & "★件数不一致"
+        Exit Function
+    End If
+
+    Dim i As Long, j As Long
+
+    '========================
+    ' ヘッダー行比較（行0）
+    '========================
+    Dim headerDiff As Boolean
+    headerDiff = False
+
+    For j = 0 To UBound(arrOld, 2)
+        If arrOld(0, j) <> arrNew(0, j) Then
+            headerDiff = True
+            Exit For
+        End If
+    Next j
+
+    If headerDiff Then
+        log = log & "★ヘッダー差異あり" & vbCrLf
+    End If
+
+    '========================
+    ' ソートなし比較（順序差異）
+    '========================
+    Dim orderDiff As Boolean
+    orderDiff = False
+
+    For i = 1 To UBound(arrOld, 1)
+        For j = 0 To UBound(arrOld, 2)
+            If arrOld(i, j) <> arrNew(i, j) Then
+                orderDiff = True
+                Exit For
+            End If
+        Next j
+        If orderDiff Then Exit For
+    Next i
+
+    If orderDiff Then
+        log = log & "★順序差異あり（ソートなし）" & vbCrLf
+    End If
+
+    '========================
+    ' ソートあり比較（実データ差異）
+    '========================
+    Dim sortedOld As Variant
+    Dim sortedNew As Variant
+
+    sortedOld = Sort2D(arrOld)
+    sortedNew = Sort2D(arrNew)
+
+    Dim diff As Long
+    diff = 0
+
+    For i = 1 To UBound(sortedOld, 1)
+        For j = 0 To UBound(sortedOld, 2)
+            If sortedOld(i, j) <> sortedNew(i, j) Then
+                diff = diff + 1
+
+                sheet.Cells(row, 1).Value = Mid(fileOld, InStrRev(fileOld, "\") + 1)
+                sheet.Cells(row, 2).Value = i
+                sheet.Cells(row, 3).Value = j + 1
+                sheet.Cells(row, 4).Value = sortedOld(i, j)
+                sheet.Cells(row, 5).Value = sortedNew(i, j)
+
+                sheet.Cells(row, 4).Interior.Color = RGB(255, 200, 200)
+                sheet.Cells(row, 5).Interior.Color = RGB(255, 200, 200)
+
+                row = row + 1
+            End If
+        Next j
+    Next i
+
+    If diff > 0 Then
+        log = log & "★実データ差異あり（" & diff & " 箇所）" & vbCrLf
+    End If
+
+    CompareExcelFiles = log
+End Function
+
+
+'==================================================
+' Excelシート読み込み（2次元配列に格納）
+'==================================================
+Private Function ReadExcelSheet(ws As Object) As Variant
+
+    Dim lastRow As Long
+    Dim lastCol As Long
+
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(-4162).Row
+    lastCol = ws.Cells(1, ws.Columns.Count).End(-4159).Column
+
+    Dim data() As Variant
+    ReDim data(lastRow - 1, lastCol - 1)
+
+    Dim i As Long, j As Long
+    For i = 1 To lastRow
+        For j = 1 To lastCol
+            Dim val As Variant
+            val = ws.Cells(i, j).Value
+
+            If IsDate(val) Then
+                data(i - 1, j - 1) = Format(val, "yyyy/mm/dd hh:nn:ss")
+            ElseIf IsNull(val) Or IsEmpty(val) Then
+                data(i - 1, j - 1) = ""
+            Else
+                data(i - 1, j - 1) = CStr(val)
+            End If
+        Next j
+    Next i
+
+    ReadExcelSheet = data
+End Function
+
+
+'==================================================
+' 2次元配列ソート（全列をキーにして安定ソート）
+'==================================================
+Private Function Sort2D(arr As Variant) As Variant
+
+    Dim i As Long, j As Long
+    Dim key As String
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+
+    For i = 1 To UBound(arr, 1)
+        key = ""
+        For j = 0 To UBound(arr, 2)
+            key = key & "|" & arr(i, j)
+        Next j
+        key = key & "|__ROW__" & i
+        dict(key) = i
+    Next i
+
+    Dim keys As Variant
+    keys = dict.Keys
+    Call QuickSort(keys, 0, UBound(keys))
+
+    Dim sorted() As Variant
+    ReDim sorted(UBound(arr, 1), UBound(arr, 2))
+
+    Dim idx As Long
+    idx = 1
+
+    For i = 0 To UBound(keys)
+        Dim r As Long
+        r = dict(keys(i))
+        For j = 0 To UBound(arr, 2)
+            sorted(idx, j) = arr(r, j)
+        Next j
+        idx = idx + 1
+    Next i
+
+    Sort2D = sorted
+End Function
+
+
+'==================================================
+' QuickSort（文字列キー用）
+'==================================================
+Private Sub QuickSort(arr As Variant, first As Long, last As Long)
+
+    Dim i As Long, j As Long
+    Dim pivot As String, tmp As String
+
+    i = first
+    j = last
+    pivot = arr((first + last) \ 2)
+
+    Do While i <= j
+        Do While arr(i) < pivot
+            i = i + 1
+        Loop
+        Do While arr(j) > pivot
+            j = j - 1
+        Loop
+        If i <= j Then
+            tmp = arr(i)
+            arr(i) = arr(j)
+            arr(j) = tmp
+            i = i + 1
+            j = j - 1
+        End If
+    Loop
+
+    If first < j Then QuickSort arr, first, j
+    If i < last Then QuickSort arr, i, last
+End Sub

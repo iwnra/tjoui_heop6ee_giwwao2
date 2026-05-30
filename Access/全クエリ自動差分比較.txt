@@ -1,0 +1,396 @@
+Option Compare Database
+Option Explicit
+
+Sub CompareAllQueries()
+   Dim dbOld As DAO.Database
+   Dim dbNew As DAO.Database
+   Dim qdf As DAO.QueryDef
+   Dim rsOld As DAO.Recordset
+   Dim rsNew As DAO.Recordset
+   Dim log As String
+   Dim skipLog As String
+   Const MAX_DIFF_ROWS As Long = 10
+
+   Dim xlApp As Object
+   Dim xlBook As Object
+   Dim xlSheet As Object
+   Dim excelRow As Long
+   Dim xlInitialized As Boolean
+   xlInitialized = False
+
+   On Error GoTo ErrorExit
+
+   '========================
+   ' DBオープン
+   '========================
+   Set dbOld = DBEngine.OpenDatabase("C:\test\old.mdb")
+   Set dbNew = DBEngine.OpenDatabase("C:\test\new.accdb")
+
+   '========================
+   ' ログ初期化
+   '========================
+   log = "=== 比較結果 ===" & vbCrLf
+   skipLog = "=== スキップしたクエリ ===" & vbCrLf
+
+   '========================
+   ' Excel初期化
+   '========================
+   Set xlApp = CreateObject("Excel.Application")
+   Set xlBook = xlApp.Workbooks.Add
+   Set xlSheet = xlBook.Sheets(1)
+   xlSheet.Name = "実データ差異"
+   xlInitialized = True
+
+   excelRow = 1
+   xlSheet.Cells(excelRow, 1).Value = "Query"
+   xlSheet.Cells(excelRow, 2).Value = "Row"
+   xlSheet.Cells(excelRow, 3).Value = "Field"
+   xlSheet.Cells(excelRow, 4).Value = "MDB"
+   xlSheet.Cells(excelRow, 5).Value = "ACCDB"
+   excelRow = excelRow + 1
+
+   '========================
+   ' クエリループ
+   '========================
+   For Each qdf In dbOld.QueryDefs
+       If Left(qdf.Name, 1) = "~" Then GoTo NextQuery
+       If qdf.Type <> dbQSelect Then GoTo NextQuery
+
+       Debug.Print "比較開始 : " & qdf.Name
+       Dim errMsg As String
+       errMsg = ""
+
+       '========================
+       ' 件数比較
+       '========================
+       Dim cntOld As Long
+       Dim cntNew As Long
+
+       On Error Resume Next
+       cntOld = GetRecordCount(dbOld, qdf.Name)
+       If Err.Number <> 0 Then
+           errMsg = "mdb件数取得失敗: " & Err.Description
+           skipLog = skipLog & "[" & qdf.Name & "] " & errMsg & vbCrLf
+           Err.Clear
+           GoTo NextQuery
+       End If
+
+       cntNew = GetRecordCount(dbNew, qdf.Name)
+       If Err.Number <> 0 Then
+           errMsg = "accdb件数取得失敗: " & Err.Description
+           skipLog = skipLog & "[" & qdf.Name & "] " & errMsg & vbCrLf
+           Err.Clear
+           GoTo NextQuery
+       End If
+       On Error GoTo ErrorExit
+
+       If cntOld <> cntNew Then
+           log = log & vbCrLf & _
+                 "【" & qdf.Name & "】★件数不一致" & vbCrLf & _
+                 "mdb=" & cntOld & " accdb=" & cntNew & vbCrLf
+           GoTo NextQuery
+       End If
+
+       '========================
+       ' ORDER BYなし比較
+       '========================
+       On Error Resume Next
+       Set rsOld = OpenSortedRecordset(dbOld, qdf.Name, False)
+       If Err.Number <> 0 Then
+           errMsg = "Recordsetオープン失敗(mdb/ソートなし): " & Err.Description
+           skipLog = skipLog & "[" & qdf.Name & "] " & errMsg & vbCrLf
+           Err.Clear
+           GoTo NextQuery
+       End If
+
+       Set rsNew = OpenSortedRecordset(dbNew, qdf.Name, False)
+       If Err.Number <> 0 Then
+           errMsg = "Recordsetオープン失敗(accdb/ソートなし): " & Err.Description
+           skipLog = skipLog & "[" & qdf.Name & "] " & errMsg & vbCrLf
+           Err.Clear
+           GoTo NextQuery
+       End If
+       On Error GoTo ErrorExit
+
+       Dim dummyRow As Long
+       dummyRow = 0
+       Dim compareResult As String
+       compareResult = CompareRecordsets(rsOld, rsNew, MAX_DIFF_ROWS, Nothing, dummyRow, qdf.Name)
+
+       rsOld.Close: Set rsOld = Nothing
+       rsNew.Close: Set rsNew = Nothing
+
+       If compareResult = "" Then GoTo NextQuery
+
+       '========================
+       ' ORDER BYあり比較
+       '========================
+       On Error Resume Next
+       Set rsOld = OpenSortedRecordset(dbOld, qdf.Name, True)
+       If Err.Number <> 0 Then
+           errMsg = "Recordsetオープン失敗(mdb/ソートあり): " & Err.Description
+           skipLog = skipLog & "[" & qdf.Name & "] " & errMsg & vbCrLf
+           Err.Clear
+           GoTo NextQuery
+       End If
+
+       Set rsNew = OpenSortedRecordset(dbNew, qdf.Name, True)
+       If Err.Number <> 0 Then
+           errMsg = "Recordsetオープン失敗(accdb/ソートあり): " & Err.Description
+           skipLog = skipLog & "[" & qdf.Name & "] " & errMsg & vbCrLf
+           Err.Clear
+           GoTo NextQuery
+       End If
+       On Error GoTo ErrorExit
+
+       Dim sortedCompareResult As String
+       sortedCompareResult = CompareRecordsets(rsOld, rsNew, MAX_DIFF_ROWS, xlSheet, excelRow, qdf.Name)
+
+       rsOld.Close: Set rsOld = Nothing
+       rsNew.Close: Set rsNew = Nothing
+
+       If sortedCompareResult = "" Then
+           log = log & vbCrLf & "【" & qdf.Name & "】順序差異のみ" & vbCrLf
+       Else
+           log = log & vbCrLf & "【" & qdf.Name & "】★実データ差異あり" & vbCrLf & _
+                 sortedCompareResult & vbCrLf
+       End If
+
+NextQuery:
+       If Not rsOld Is Nothing Then On Error Resume Next: rsOld.Close: Set rsOld = Nothing
+       If Not rsNew Is Nothing Then On Error Resume Next: rsNew.Close: Set rsNew = Nothing
+       On Error GoTo ErrorExit
+   Next qdf
+
+   '========================
+   ' TXT出力
+   '========================
+   Dim fNum As Integer
+   fNum = FreeFile
+   Open "C:\test\compare_result.txt" For Output As #fNum
+   Print #fNum, log
+   Print #fNum, vbCrLf
+   Print #fNum, skipLog
+   Close #fNum
+
+   '========================
+   ' Excel保存
+   '========================
+   If xlInitialized Then
+       xlSheet.Columns.AutoFit
+       On Error Resume Next
+       xlBook.SaveAs "C:\test\compare_detail.xlsx"
+       On Error GoTo ErrorExit
+       xlBook.Close False
+       xlApp.Quit
+       Set xlSheet = Nothing
+       Set xlBook = Nothing
+       Set xlApp = Nothing
+   End If
+
+   dbOld.Close: Set dbOld = Nothing
+   dbNew.Close: Set dbNew = Nothing
+
+   MsgBox "すべての比較処理が正常に完了しました。", vbInformation
+   Exit Sub
+
+'==================================================
+' エラー時クリーンアップ
+'==================================================
+ErrorExit:
+   On Error Resume Next
+   If Not rsOld Is Nothing Then rsOld.Close: Set rsOld = Nothing
+   If Not rsNew Is Nothing Then rsNew.Close: Set rsNew = Nothing
+   If Not dbOld Is Nothing Then dbOld.Close: Set dbOld = Nothing
+   If Not dbNew Is Nothing Then dbNew.Close: Set dbNew = Nothing
+   If xlInitialized Then
+       If Not xlBook Is Nothing Then xlBook.Close False
+       If Not xlApp Is Nothing Then xlApp.Quit
+       Set xlSheet = Nothing
+       Set xlBook = Nothing
+       Set xlApp = Nothing
+   End If
+   MsgBox "エラー発生: " & Err.Description, vbCritical
+End Sub
+
+'==================================================
+' 件数取得（Set Nothing 追加）
+'==================================================
+Private Function GetRecordCount(db As DAO.Database, queryName As String) As Long
+   Dim rs As DAO.Recordset
+   Dim sql As String
+   sql = "SELECT COUNT(*) AS Cnt FROM [" & queryName & "]"
+   Set rs = db.OpenRecordset(sql, dbOpenSnapshot)
+   GetRecordCount = rs!Cnt
+   rs.Close
+   Set rs = Nothing
+End Function
+
+'==================================================
+' Recordsetオープン（ORDER BY を QueryDef.Fields 順に）
+'==================================================
+Private Function OpenSortedRecordset(db As DAO.Database, queryName As String, useOrderBy As Boolean) As DAO.Recordset
+   Dim sql As String
+   sql = "SELECT * FROM [" & queryName & "]"
+   If useOrderBy Then
+       Dim fieldList As String
+       fieldList = GetOrderByFields(db, queryName)
+       If fieldList <> "" Then sql = sql & " ORDER BY " & fieldList
+   End If
+   Set OpenSortedRecordset = db.OpenRecordset(sql, dbOpenSnapshot)
+End Function
+
+'==================================================
+' ORDER BY列作成（QueryDef.Fields 順に改善）
+'==================================================
+Private Function GetOrderByFields(db As DAO.Database, queryName As String) As String
+   Dim q As DAO.QueryDef
+   Dim i As Long
+   Dim wk As String
+
+   Set q = db.QueryDefs(queryName)
+
+   For i = 0 To q.Fields.Count - 1
+       Select Case q.Fields(i).Type
+           Case dbMemo, dbLongBinary
+               ' ORDER BY不可
+           Case Else
+               If wk <> "" Then wk = wk & ","
+               wk = wk & "[" & q.Fields(i).Name & "]"
+       End Select
+   Next
+
+   GetOrderByFields = wk
+End Function
+
+'==================================================
+' Recordset比較（EOF同期ズレ詳細追加）
+'==================================================
+Private Function CompareRecordsets( _
+   rsOld As DAO.Recordset, _
+   rsNew As DAO.Recordset, _
+   maxDiffRows As Long, _
+   xlSheet As Object, _
+   ByRef excelRow As Long, _
+   queryName As String) As String
+
+   Dim log As String
+   log = ""
+   Dim i As Long
+   Dim rowNo As Long
+   Dim diffCount As Long
+
+   If rsOld.Fields.Count <> rsNew.Fields.Count Then
+       CompareRecordsets = "フィールド数不一致 mdb=" & rsOld.Fields.Count & " accdb=" & rsNew.Fields.Count
+       Exit Function
+   End If
+
+   rowNo = 0
+
+   Do While Not rsOld.EOF And Not rsNew.EOF
+       For i = 0 To rsOld.Fields.Count - 1
+           Dim valOld As Variant
+           Dim valNew As Variant
+
+           On Error Resume Next
+           valOld = rsOld.Fields(i).Value
+           valNew = rsNew.Fields(i).Value
+           If Err.Number <> 0 Then
+               log = log & "行" & rowNo & " 列[" & rsOld.Fields(i).Name & "] 値取得失敗" & vbCrLf
+               Err.Clear
+               On Error GoTo 0
+               GoTo NextField
+           End If
+           On Error GoTo 0
+
+           If Not NullSafeEqual(valOld, valNew) Then
+               diffCount = diffCount + 1
+
+               If diffCount <= maxDiffRows Then
+                   log = log & "行" & rowNo & " 列[" & rsOld.Fields(i).Name & "] " & _
+                         "mdb=" & ValueToText(valOld) & " accdb=" & ValueToText(valNew) & vbCrLf
+               ElseIf diffCount = maxDiffRows + 1 Then
+                   log = log & "・・・以降省略" & vbCrLf
+               End If
+
+               If Not xlSheet Is Nothing Then
+                   xlSheet.Cells(excelRow, 1).Value = queryName
+                   xlSheet.Cells(excelRow, 2).Value = rowNo
+                   xlSheet.Cells(excelRow, 3).Value = rsOld.Fields(i).Name
+                   xlSheet.Cells(excelRow, 4).Value = ValueToText(valOld)
+                   xlSheet.Cells(excelRow, 5).Value = ValueToText(valNew)
+                   excelRow = excelRow + 1
+               End If
+           End If
+NextField:
+       Next i
+       rsOld.MoveNext
+       rsNew.MoveNext
+       rowNo = rowNo + 1
+   Loop
+
+   '========================
+   ' EOF同期ズレ詳細
+   '========================
+   If rsOld.EOF And Not rsNew.EOF Then
+       log = log & "★ACCDB側に余分な行があります" & vbCrLf
+   ElseIf Not rsOld.EOF And rsNew.EOF Then
+       log = log & "★MDB側に余分な行があります" & vbCrLf
+   End If
+
+   If diffCount > 0 Then log = log & "差分箇所数=" & diffCount & vbCrLf
+
+   CompareRecordsets = log
+End Function
+
+'==================================================
+' Null/型安全比較
+'==================================================
+Private Function NullSafeEqual(valOld As Variant, valNew As Variant) As Boolean
+   If IsNull(valOld) And IsNull(valNew) Then
+       NullSafeEqual = True
+       Exit Function
+   End If
+   If IsNull(valOld) Or IsNull(valNew) Then
+       NullSafeEqual = False
+       Exit Function
+   End If
+   If IsDate(valOld) And IsDate(valNew) Then
+       NullSafeEqual = (CDate(valOld) = CDate(valNew))
+       Exit Function
+   End If
+   If IsNumeric(valOld) And IsNumeric(valNew) Then
+       If IsFloatType(valOld) Or IsFloatType(valNew) Then
+           NullSafeEqual = (Abs(CDbl(valOld) - CDbl(valNew)) < 0.000001)
+       Else
+           NullSafeEqual = (CDbl(valOld) = CDbl(valNew))
+       End If
+       Exit Function
+   End If
+   NullSafeEqual = (CStr(valOld) = CStr(valNew))
+End Function
+
+'==================================================
+' 浮動小数判定
+'==================================================
+Private Function IsFloatType(val As Variant) As Boolean
+   Select Case VarType(val)
+       Case vbSingle, vbDouble, vbDecimal
+           IsFloatType = True
+       Case Else
+           IsFloatType = False
+   End Select
+End Function
+
+'==================================================
+' ログ表示用文字列化
+'==================================================
+Private Function ValueToText(val As Variant) As String
+   If IsNull(val) Then
+       ValueToText = "NULL"
+   ElseIf IsDate(val) Then
+       ValueToText = Format(val, "yyyy/mm/dd hh:nn:ss")
+   Else
+       ValueToText = CStr(val)
+   End If
+End Function

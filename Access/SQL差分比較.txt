@@ -1,0 +1,285 @@
+Option Explicit
+
+'==================================================
+' メイン処理：old/new の SQL を比較（整形＋差異ハイライト）
+'==================================================
+Sub CompareSqlFolders()
+
+    Dim dbOld As DAO.Database
+    Dim dbNew As DAO.Database
+    Dim qdf   As DAO.QueryDef
+    Dim log   As String
+    Dim skipLog As String
+
+    Dim xl    As Object
+    Dim book  As Object
+    Dim sheet As Object
+    Dim row   As Long
+
+    On Error GoTo ErrorExit
+
+    '========================
+    ' DB オープン
+    '========================
+    Set dbOld = DBEngine.OpenDatabase("C:\compare\old\old.mdb")
+    Set dbNew = DBEngine.OpenDatabase("C:\compare\new\new.accdb")
+
+    log     = "=== SQL比較結果 ===" & vbCrLf
+    skipLog = "=== スキップしたクエリ ===" & vbCrLf
+
+    '========================
+    ' Excel 初期化
+    '========================
+    Set xl = CreateObject("Excel.Application")
+    xl.Visible = False
+    Set book  = xl.Workbooks.Add
+    Set sheet = book.Sheets(1)
+    sheet.Name = "SQL差異一覧"
+
+    ' ヘッダー行
+    row = 1
+    Dim headers As Variant, h As Long
+    headers = Array("Query", "Old SQL", "New SQL")
+    For h = 0 To UBound(headers)
+        With sheet.Cells(row, h + 1)
+            .Value = headers(h)
+            .Font.Bold = True
+            .Interior.Color = RGB(68, 114, 196)
+            .Font.Color = RGB(255, 255, 255)
+        End With
+    Next h
+    row = row + 1
+
+    '========================
+    ' old の QueryDef をループ
+    '========================
+    For Each qdf In dbOld.QueryDefs
+
+        If Left(qdf.Name, 1) = "~" Then GoTo NextQueryOld
+
+        Dim sqlOld As String
+        Dim sqlNew As String
+
+        sqlOld = FormatSql(qdf.SQL)
+
+        On Error Resume Next
+        sqlNew = FormatSql(dbNew.QueryDefs(qdf.Name).SQL)
+        If Err.Number <> 0 Then
+            skipLog = skipLog & qdf.Name & " → new側に存在しない" & vbCrLf
+            Err.Clear
+            On Error GoTo ErrorExit
+            GoTo NextQueryOld
+        End If
+        On Error GoTo ErrorExit
+
+        '========================
+        ' SQL 比較
+        '========================
+        If sqlOld <> sqlNew Then
+
+            log = log & vbCrLf & "【" & qdf.Name & "】SQL差異あり" & vbCrLf
+
+            ' 先に値を文字型として確実に格納
+            sheet.Cells(row, 1).Value = qdf.Name
+            sheet.Cells(row, 2).Value = "'" & sqlOld
+            sheet.Cells(row, 3).Value = "'" & sqlNew
+
+            ' ★ 差異ハイライト（Range型として明示的に渡す）
+            Call HighlightSqlDiff(sheet.Cells(row, 2), sheet.Cells(row, 3))
+
+            row = row + 1
+        End If
+
+NextQueryOld:
+    Next qdf
+
+    '========================
+    ' new の QueryDef をループ（追加クエリ検出）
+    '========================
+    For Each qdf In dbNew.QueryDefs
+        If Left(qdf.Name, 1) = "~" Then GoTo NextQueryNew
+
+        Dim tmpSql As String
+        tmpSql = ""
+
+        On Error Resume Next
+        tmpSql = dbOld.QueryDefs(qdf.Name).SQL
+        If Err.Number <> 0 Then
+            skipLog = skipLog & qdf.Name & " → old側に存在しない（new側に追加）" & vbCrLf
+            Err.Clear
+        End If
+        On Error GoTo ErrorExit
+
+NextQueryNew:
+    Next qdf
+
+    '========================
+    ' TXT 出力
+    '========================
+    Dim f As Integer
+    f = FreeFile
+    Open "C:\compare\sql_compare_result.txt" For Output As #f
+    Print #f, log
+    Print #f, vbCrLf
+    Print #f, skipLog
+    Close #f
+
+    '========================
+    ' Excel 整形・保存
+    '========================
+    sheet.Rows.WrapText = True
+    sheet.Columns(1).ColumnWidth = 30
+    sheet.Columns(2).ColumnWidth = 80
+    sheet.Columns(3).ColumnWidth = 80
+
+    sheet.Rows(2).Select
+    xl.ActiveWindow.FreezePanes = True
+
+    xl.DisplayAlerts = False
+    book.SaveAs "C:\compare\sql_compare_detail.xlsx"
+    book.Close False
+    xl.Quit
+    xl.DisplayAlerts = True
+
+    dbOld.Close
+    dbNew.Close
+
+    MsgBox "SQL比較完了", vbInformation
+    Exit Sub
+
+'==================================================
+' エラー処理
+'==================================================
+ErrorExit:
+    On Error Resume Next
+    If Not book Is Nothing Then book.Close False
+    If Not xl Is Nothing Then xl.Quit
+    If Not dbOld Is Nothing Then dbOld.Close
+    If Not dbNew Is Nothing Then dbNew.Close
+    MsgBox "エラー発生: " & Err.Description, vbCritical
+End Sub
+
+
+'==================================================
+' SQL 整形（正規表現による文字列リテラル保護＋キーワード整形）
+'==================================================
+Private Function FormatSql(sql As String) As String
+    Dim reg As Object
+    Set reg = CreateObject("VBScript.RegExp")
+    
+    ' 文字列リテラル（"..." または '...'）を一時的に退避するための配列
+    Dim matches As Object
+    Dim literals() As String
+    Dim s As String
+    
+    s = sql
+    
+    ' 正規表現でダブルクォーテーションで囲まれた部分を抽出
+    reg.Pattern = """[^""]*"""
+    reg.Global = True
+    Set matches = reg.Execute(s)
+    
+    If matches.Count > 0 Then
+        ReDim literals(0 To matches.Count - 1)
+        Dim i As Long
+        ' 後ろから置換しないと位置がズレるため、逆順でプレースホルダーに置換
+        For i = matches.Count - 1 To 0 Step -1
+            literals(i) = matches(i).Value
+            s = Left(s, matches(i).FirstIndex) & "〔STR_" & i & "〕" & Mid(s, matches(i).FirstIndex + matches(i).Length + 1)
+        Next i
+    End If
+
+    ' 改行 → スペース
+    s = Replace(s, vbCrLf, " ")
+    s = Replace(s, vbCr, " ")
+    s = Replace(s, vbLf, " ")
+
+    ' 連続スペースを1つに
+    Dim regSpace As Object
+    Set regSpace = CreateObject("VBScript.RegExp")
+    regSpace.Pattern = " +"
+    regSpace.Global = True
+    s = regSpace.Replace(s, " ")
+
+    s = UCase(Trim(s))
+
+    '----------------------------
+    ' キーワード整形（前後に改行を入れる、Excel対応のため vbLf に変更）
+    '----------------------------
+    Dim keywords As Variant, kw As Variant
+    keywords = Array("SELECT ", "FROM ", "WHERE ", "GROUP BY ", "HAVING ", "ORDER BY ", _
+                     "INNER JOIN ", "LEFT JOIN ", "RIGHT JOIN ", "ON ", "UNION ", _
+                     "PARAMETERS ", "TRANSFORM ", "PIVOT ", "SELECT DISTINCT ", _
+                     "SELECT DISTINCTROW ", "SELECT TOP ")
+                     
+    For Each kw In keywords
+        s = Replace(s, " " & kw, vbLf & kw)
+    Next kw
+
+    '----------------------------
+    ' 文字列リテラルを戻す
+    '----------------------------
+    If matches.Count > 0 Then
+        For i = 0 To matches.Count - 1
+            s = Replace(s, "〔STR_" & i & "〕", literals(i))
+        Next i
+    End If
+
+    FormatSql = Trim(s)
+End Function
+
+
+'==================================================
+' SQL 差異ハイライト（行単位での比較・Excelの仕様に準拠）
+'==================================================
+Private Sub HighlightSqlDiff(cellOld As Object, cellNew As Object)
+    Dim linesOld() As String
+    Dim linesNew() As String
+    Dim i As Long, pos As Long
+    Dim lineLen As Long
+    Dim matchLine As String
+
+    ' Excelのセル内改行は必ず vbLf (Chr(10)) になるため、vbLf でスプリット
+    linesOld = Split(cellOld.Value, vbLf)
+    linesNew = Split(cellNew.Value, vbLf)
+
+    '----------------------------
+    ' Old セルのハイライト
+    '----------------------------
+    pos = 1
+    For i = 0 To UBound(linesOld)
+        lineLen = Len(linesOld(i))
+        If i <= UBound(linesNew) Then
+            matchLine = linesNew(i)
+        Else
+            matchLine = ""
+        End If
+
+        If linesOld(i) <> matchLine Then
+            If lineLen > 0 Then
+                cellOld.Characters(pos, lineLen).Font.Color = RGB(255, 0, 0)
+            End If
+        End If
+        pos = pos + lineLen + 1 ' Excel内改行(vbLf)は1文字
+    Next i
+
+    '----------------------------
+    ' New セルのハイライト
+    '----------------------------
+    pos = 1
+    For i = 0 To UBound(linesNew)
+        lineLen = Len(linesNew(i))
+        If i <= UBound(linesOld) Then
+            matchLine = linesOld(i)
+        Else
+            matchLine = ""
+        End If
+
+        If linesNew(i) <> matchLine Then
+            If lineLen > 0 Then
+                cellNew.Characters(pos, lineLen).Font.Color = RGB(255, 0, 0)
+            End If
+        End If
+        pos = pos + lineLen + 1 ' Excel内改行(vbLf)は1文字
+    Next i
+End Sub
