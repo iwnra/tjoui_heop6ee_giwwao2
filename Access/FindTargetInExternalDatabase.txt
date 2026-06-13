@@ -1,0 +1,72 @@
+Sub FindTargetInExternalDatabase()
+    Dim dbe As DAO.DBEngine
+    Dim db As DAO.Database
+    Dim qdf As DAO.QueryDef
+    Dim targetFilePath As String
+    Dim searchName As String
+    Dim foundCount As Long
+    
+    ' ==================================================
+    ' 【設定】
+    ' 1. 検索対象の別ファイルのフルパスを指定
+    targetFilePath = "C:\Users\Username\Documents\対象ファイル.accdb"
+    
+    ' 2. 検索したいテーブル名またはクエリ名を入力
+    searchName = "T_顧客マスタ"
+    ' ==================================================
+    
+    ' ファイルの存在チェック
+    If Dir(targetFilePath) = "" Then
+        MsgBox "指定されたファイルが見つかりません:" & vbCrLf & targetFilePath, vbExclamation
+        Exit Sub
+    End If
+    
+    Set dbe = New DAO.DBEngine
+    On Error GoTo ErrorHandler
+    
+    ' 外部データベースを読み取り専用で開く
+    Set db = dbe.OpenDatabase(targetFilePath, False, True)
+    foundCount = 0
+    
+    Debug.Print "=================================================="
+    Debug.Print "【調査対象ファイル】 " & targetFilePath
+    Debug.Print "【検索キーワード】   [" & searchName & "]"
+    Debug.Print "=================================================="
+    Debug.Print ""
+    
+    ' 外部ファイルの全クエリをループ処理
+    For Each qdf In db.QueryDefs
+        ' 復旧用の一時クエリ（~sq_で始まるもの）は除外
+        If Left(qdf.Name, 4) <> "~sq_" Then
+            
+            ' SQL文の中に検索対象の文字列が含まれているか
+            If InStr(1, qdf.SQL, searchName, vbTextCompare) > 0 Then
+                foundCount = foundCount + 1
+                
+                ' クエリ名とSQL文をセットで出力
+                Debug.Print "--------------------------------------------------"
+                Debug.Print "[" & foundCount & "] クエリ名: " & qdf.Name
+                Debug.Print "--------------------------------------------------"
+                Debug.Print Trim(qdf.SQL)
+                Debug.Print "" ' 見やすさのための改行
+            End If
+            
+        End If
+    Next qdf
+    
+    Debug.Print "=================================================="
+    Debug.Print "【検索終了】 合計 " & foundCount & " 件のクエリが見つかりました。"
+    Debug.Print "=================================================="
+
+ExitPosition:
+    ' 後片付け（エラー時も確実に閉じる）
+    On Error Resume Next
+    If Not qdf Is Nothing Then Set qdf = Nothing
+    If Not db Is Nothing Then db.Close: Set db = Nothing
+    Set dbe = Nothing
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "エラーが発生しました: " & Err.Description, vbCritical
+    Resume ExitPosition
+End Sub
