@@ -1,0 +1,91 @@
+' ============================================================
+' 固定長エクスポート（DATファイル対応）
+' specName    : 定義済みインポート/エクスポート仕様名
+' tableName   : テーブル名またはクエリ名
+' datFilePath : 最終出力先のDATファイルパス
+' ============================================================
+Public Sub ExportFixedToDat( _
+    specName As String, _
+    tableName As String, _
+    datFilePath As String, _
+)
+    Dim txtFilePath As String
+    txtFilePath = ReplaceExtension(datFilePath, "txt")
+
+    ' 同名の一時ファイルが残っていたら削除
+    If Dir(txtFilePath) <> "" Then Kill txtFilePath
+
+	On Error GoTo Cleanup
+    DoCmd.TransferText acExportFixed, specName, tableName, txtFilePath
+
+    ' txt → DAT にリネーム
+    If Dir(datFilePath) <> "" Then Kill datFilePath
+    Name txtFilePath As datFilePath
+    Exit Sub
+
+Cleanup:
+    ' 一時ファイルを削除してからエラーを呼び出し元に再送出
+    If Dir(txtFilePath) <> "" Then Kill txtFilePath
+    Err.Raise Err.Number, Err.Source, Err.Description
+
+End Sub
+
+
+' ============================================================
+' 固定長インポート（DATファイル対応）
+' specName    : 定義済みインポート/エクスポート仕様名
+' tableName   : インポート先テーブル名
+' datFilePath : インポート元のDATファイルパス
+' ============================================================
+Public Sub ImportFixedFromDat( _
+    specName As String, _
+    tableName As String, _
+    datFilePath As String, _
+)
+    Dim txtFilePath As String
+    txtFilePath = ReplaceExtension(datFilePath, "txt")
+
+    ' DAT → txt に複製
+    If Dir(datFilePath) = "" Then
+        Err.Raise vbObjectError + 1, "ImportFixedFromDat", _
+            "インポート元ファイルが見つかりません: " & datFilePath
+    End If
+
+    If Dir(txtFilePath) <> "" Then Kill txtFilePath
+    FileCopy datFilePath, txtFilePath
+
+    On Error GoTo Cleanup
+    DoCmd.TransferText acImportFixed, specName, tableName, txtFilePath
+
+Cleanup:
+    ' 一時ファイルを必ず削除
+    If Dir(txtFilePath) <> "" Then Kill txtFilePath
+    If Err.Number <> 0 Then Err.Raise Err.Number, Err.Source, Err.Description
+
+End Sub
+
+
+' ============================================================
+' ファイルパスの拡張子を置換するヘルパー関数
+' 例: "C:\data\export.DAT", "txt" → "C:\data\export.txt"
+' ============================================================
+Private Function ReplaceExtension(filePath As String, newExt As String) As String
+    Dim dotPos As Long
+    dotPos = InStrRev(filePath, ".")
+    If dotPos > 0 Then
+        ReplaceExtension = Left(filePath, dotPos) & newExt
+    Else
+        ReplaceExtension = filePath & "." & newExt
+    End If
+End Function
+
+
+
+' エクスポート
+ExportFixedToDat "仕様名_出力", "T_売上", "C:\data\売上.DAT"
+
+' インポート
+ImportFixedFromDat "仕様名_入力", "T_売上", "C:\data\売上.DAT"
+
+
+呼び出し元にエラーをthrow
