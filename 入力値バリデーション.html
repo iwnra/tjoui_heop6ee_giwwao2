@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>入力値バリデーション</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* エラー時の背景色クラス */
+        .is-invalid {
+            background-color: #ffcccc !important;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: inline-block;
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+
+    <h3>寸法入力（基準値チェック）</h3>
+    
+    <div class="form-group">
+        <label for="thickness">厚み:</label>
+        <input type="number" id="thickness" class="validate-input" data-type="thickness" step="0.1">
+    </div>
+    
+    <div class="form-group">
+        <label for="width">幅:</label>
+        <input type="number" id="width" class="validate-input" data-type="width" step="0.1">
+    </div>
+    
+    <div class="form-group">
+        <label for="length">長さ:</label>
+        <input type="number" id="length" class="validate-input" data-type="length" step="0.1">
+    </div>
+
+<script>
+$(document).ready(function() {
+    // 1. DBの基準値マスタから取得したと想定するデータ（擬似データ）
+    const masterData = {
+        thickness: { name: "厚み", min: 1.0, max: 10.0 },
+        width:     { name: "幅",   min: 10.0, max: 100.0 },
+        length:    { name: "長さ", min: 50.0, max: 500.0 }
+    };
+
+    // 2. テキストボックスからフォーカスが外れた（blur）ときの処理
+    $('.validate-input').on('blur', function() {
+        const $input = $(this);
+        const valueStr = $input.val();
+        
+        // 未入力の場合はチェックをスキップ（必要に応じて必須チェックを入れてください）
+        if (valueStr === "") {
+            $input.removeClass('is-invalid');
+            return;
+        }
+
+        const value = parseFloat(valueStr);
+        const type = $input.data('type'); // thickness, width, length のいずれかを取得
+        const master = masterData[type];
+
+        // 3. 上限値・下限値の判定
+        if (value < master.min || value > master.max) {
+            // 範囲外なら背景色を赤くする
+            $input.addClass('is-invalid');
+
+            // SweetAlert2 で警告ダイアログを表示
+            Swal.fire({
+                icon: 'warning',
+                title: '基準値範囲外です',
+                html: `<b>${master.name}</b> の値が基準値を超えています。<br>` +
+                      `入力値: ${value}<br>` +
+                      `許容範囲: ${master.min} ～ ${master.max}`,
+                confirmButtonText: '確認',
+                confirmButtonColor: '#d33'
+            }).then(() => {
+                // ダイアログを閉じた後に、対象のテキストボックスにフォーカスを戻す（任意）
+                $input.focus();
+            });
+
+        } else {
+            // 範囲内なら背景色を元に戻す
+            $input.removeClass('is-invalid');
+        }
+    });
+});
+</script>
+
+</body>
+</html>
