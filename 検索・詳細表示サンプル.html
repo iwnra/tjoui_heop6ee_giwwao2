@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>検索・詳細表示サンプル</title>
+    <style>
+        .container { display: flex; gap: 20px; margin-top: 20px; }
+        .list-area { width: 30%; border: 1px solid #ccc; padding: 10px; min-height: 300px; }
+        .detail-area { width: 70%; border: 1px solid #ccc; padding: 10px; min-height: 300px; }
+        .list-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .list-item:hover { background-color: #f0f0f0; }
+        .list-item.active { background-color: #e0e0e0; font-weight: bold; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script> 
+</head>
+<body>
+
+    <button id="search-btn">検索する</button>
+
+    <div class="container">
+        <div class="list-area" id="list-container">
+            <p>検索ボタンを押してください。</p>
+        </div>
+        
+        <div class="detail-area" id="detail-container">
+            <p>一覧から項目を選択してください。</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="app.js"></script>
+</body>
+<script>
+$(document).ready(function() {
+    // 取得したデータを保持する変数
+    let searchResults = [];
+
+    // 1. 検索ボタンクリック時の処理
+    $('#search-btn').on('click', function() {
+        // 画面をクリア
+        $('#list-container').empty().text('検索中...');
+        $('#detail-container').empty().text('一覧から項目を選択してください。');
+
+        // 本来は$.ajaxなどでサーバーから取得しますが、ここでは疑似データ（Ajax成功時と仮定）
+        // ※詳細データ（descriptionなど）も一緒に取得しているのがミソです
+        searchResults = [
+            { id: 101, name: "商品A", price: "¥1,200", description: "商品Aの詳細テキストです。高耐久で使いやすい仕様です。" },
+            { id: 102, name: "商品B", price: "¥3,500", description: "商品Bの詳細テキストです。最新のテクノロジーを搭載しています。" },
+            { id: 103, name: "商品C", price: "¥850",  description: "商品Cの詳細テキストです。コスパ抜群のエントリーモデル。" }
+        ];
+
+        // 一覧エリアの描画
+        $('#list-container').empty();
+        if (searchResults.length === 0) {
+            $('#list-container').text('該当するデータがありません。');
+            return;
+        }
+
+        // ループ処理で一覧用のHTMLを組み立て（data-id 属性にIDを仕込む）
+        searchResults.forEach(function(item) {
+            const listItem = $('<div class="list-item"></div>')
+                .text(item.name)
+                .attr('data-id', item.id); // ここでIDを保持
+            
+            $('#list-container').append(listItem);
+        });
+    });
+
+    // 2. 一覧のレコードクリック時の処理（動的生成された要素に対応するため $(document).on を使用）
+    $(document).on('click', '.list-item', function() {
+        // 選択された要素のスタイルを変更
+        $('.list-item').removeClass('active');
+        $(this).addClass('active');
+
+        // クリックされた要素の data-id を取得
+        const selectedId = $(this).data('id');
+
+        // 保持していたデータ（searchResults）から、一致するIDのデータを検索
+        const selectedData = searchResults.find(item => item.id === selectedId);
+
+        // 右側の詳細エリアに描画
+        if (selectedData) {
+            const detailHtml = `
+                <h2>${selectedData.name}</h2>
+                <p><strong>価格:</strong> ${selectedData.price}</p>
+                <hr>
+                <p>${selectedData.description}</p>
+            `;
+            $('#detail-container').html(detailHtml);
+        }
+    });
+});
+</script>
+</html>
